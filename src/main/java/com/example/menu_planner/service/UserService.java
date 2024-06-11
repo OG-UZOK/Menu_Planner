@@ -7,6 +7,6 @@ import com.example.menu_planner.model.dtoOutput.JwtResponse;
 import jakarta.validation.Valid;
 
 public interface UserService {
-    //JwtResponse login(@Valid UserLogin userLogin);
+    JwtResponse loginUser(@Valid UserLogin userLogin);
     JwtResponse registrationUser(@Valid UserRegistration userRegistration);
 }

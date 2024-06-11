@@ -1,5 +1,6 @@
 package com.example.menu_planner.model.util;
 
+import com.example.menu_planner.exception.NotFoundException;
 import com.example.menu_planner.model.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -17,11 +18,9 @@ import java.util.UUID;
 
 @Component
 public class JwtTokenUtils {
-    //@Value("12345678qwertyui12345678qwertyui12345678qwertyui")
     @Value("${spring.jwt.secret}")
     private String secret;
 
-    //@Value("30m")
     @Value("${spring.jwt.lifetime}")
     private Duration jwtLifetime;
 
@@ -39,6 +38,17 @@ public class JwtTokenUtils {
                 .expiration(expiredDate)
                 .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
+    }
+
+    @SneakyThrows
+    public UUID getUserIdFromAuthentication(Authentication authentication) {
+        UUID userId;
+        try {
+            userId = UUID.fromString(authentication.getName());
+        } catch (Exception e) {
+            throw new NotFoundException("Authentication not contain userId");
+        }
+        return userId;
     }
 
     public UUID getUserIdFromToken(String token){

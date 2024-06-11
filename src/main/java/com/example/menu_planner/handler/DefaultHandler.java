@@ -2,6 +2,8 @@ package com.example.menu_planner.handler;
 
 import com.example.menu_planner.exception.NotFoundException;
 import com.example.menu_planner.exception.UserAlreadyExistException;
+import com.example.menu_planner.exception.WrongDataLogin;
+import com.example.menu_planner.model.dtoOutput.ExceptionResponse;
 import com.example.menu_planner.model.validation.ValidationErrorResponse;
 import com.example.menu_planner.model.validation.Violation;
 import jakarta.validation.ConstraintViolationException;
@@ -47,7 +49,14 @@ public class DefaultHandler {
     @ResponseBody
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(value = UserAlreadyExistException.class)
-    public String handleUserAlreadyExistException(UserAlreadyExistException ex) {
-        return "An error occurred: " + ex.getMessage();
+    public ExceptionResponse handleUserAlreadyExistException(UserAlreadyExistException ex) {
+        return new ExceptionResponse(ex.getMessage());
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(value = WrongDataLogin.class)
+    public ExceptionResponse handleWrongDataLoginException(WrongDataLogin ex) {
+        return new ExceptionResponse(ex.getMessage());
     }
 }

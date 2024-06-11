@@ -1,5 +1,6 @@
 package com.example.menu_planner.controller;
 
+import com.example.menu_planner.model.dtoInput.UserLogin;
 import com.example.menu_planner.model.dtoInput.UserRegistration;
 import com.example.menu_planner.model.dtoOutput.JwtResponse;
 import com.example.menu_planner.service.UserService;
@@ -16,10 +17,16 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService userService;
 
-    @PostMapping("/register")
+    @PostMapping("register")
     @ResponseBody
     public JwtResponse registerUser(@RequestBody UserRegistration request){
         return userService.registrationUser(request);
+    }
+
+    @PostMapping("login")
+    @ResponseBody
+    public JwtResponse loginuser(@RequestBody UserLogin request){
+        return userService.loginUser(request);
     }
 
 }
