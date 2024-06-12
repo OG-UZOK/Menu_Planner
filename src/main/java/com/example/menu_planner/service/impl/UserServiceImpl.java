@@ -1,10 +1,13 @@
 package com.example.menu_planner.service.impl;
 
+import com.example.menu_planner.exception.NotFoundException;
 import com.example.menu_planner.exception.UserAlreadyExistException;
 import com.example.menu_planner.exception.WrongDataLogin;
+import com.example.menu_planner.model.dtoInput.Password;
 import com.example.menu_planner.model.dtoInput.UserLogin;
 import com.example.menu_planner.model.dtoInput.UserRegistration;
 import com.example.menu_planner.model.dtoOutput.JwtResponse;
+import com.example.menu_planner.model.dtoOutput.UserProfileResponse;
 import com.example.menu_planner.model.entity.User;
 import com.example.menu_planner.model.util.JwtTokenUtils;
 import com.example.menu_planner.repository.UserRepository;
@@ -14,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -23,6 +27,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -62,5 +68,38 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepository.findByEmail(email).orElseThrow(() -> new WrongDataLogin("Incorrect login or password")
         );
+    }
+
+    @SneakyThrows
+    public UserProfileResponse getProfile(Authentication authentication) {
+        UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        return new UserProfileResponse(user.getEmail(), user.getName(), user.getSurname());
+    }
+
+    @SneakyThrows
+    public UserProfileResponse redactProfile(@Valid UserProfileResponse userProfileResponse, Authentication authentication) {
+        UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+
+        Optional<User> existingUser = userRepository.findByEmail(userProfileResponse.email());
+        if (existingUser.isPresent() && !existingUser.get().getId().equals(user.getId())) {
+            throw new UserAlreadyExistException("User with email: " + userProfileResponse.email() + " already exist");
+        }
+
+        user.setEmail(userProfileResponse.email());
+        user.setName(userProfileResponse.name());
+        user.setSurname(userProfileResponse.surname());
+        userRepository.save(user);
+        return userProfileResponse;
+    }
+
+    @SneakyThrows
+    public Password changePassword(@Valid Password password, Authentication authentication) {
+        UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+
+        user.setPassword(passwordEncoder.encode(password.password()));
+        return password;
     }
 }
