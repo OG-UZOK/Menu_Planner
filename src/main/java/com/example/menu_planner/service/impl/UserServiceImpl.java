@@ -1,10 +1,13 @@
 package com.example.menu_planner.service.impl;
 
+import com.example.menu_planner.exception.NotFoundException;
 import com.example.menu_planner.exception.UserAlreadyExistException;
 import com.example.menu_planner.exception.WrongDataLogin;
+import com.example.menu_planner.model.dtoInput.Password;
 import com.example.menu_planner.model.dtoInput.UserLogin;
 import com.example.menu_planner.model.dtoInput.UserRegistration;
 import com.example.menu_planner.model.dtoOutput.JwtResponse;
+import com.example.menu_planner.model.dtoOutput.UserProfileResponse;
 import com.example.menu_planner.model.entity.User;
 import com.example.menu_planner.model.util.JwtTokenUtils;
 import com.example.menu_planner.repository.UserRepository;
@@ -13,14 +16,19 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -30,14 +38,16 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService, UserDetailsService {
     private final UserRepository userRepository;
     private final JwtTokenUtils tokenUtils;
+    private final PasswordEncoder passwordEncoder;
 
     @SneakyThrows
     public JwtResponse registrationUser(@Valid UserRegistration userRegistration){
         if (userRepository.findByEmail(userRegistration.email()).isPresent()){
             throw new UserAlreadyExistException("User with email: " + userRegistration.email() + " already exist");
         }
-
-        User user = User.of(null, userRegistration.name(), userRegistration.surname(), userRegistration.password(), userRegistration.email(), "ROLE_USER");
+        String encodedPassword = passwordEncoder.encode(userRegistration.password());
+        System.out.println(encodedPassword);
+        User user = User.of(null, userRegistration.name(), userRegistration.surname(), encodedPassword, userRegistration.email(), "ROLE_USER");
         User savedUser = userRepository.save(user);
         String token = tokenUtils.generateToken(savedUser);
         return new JwtResponse(token);
@@ -46,9 +56,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @SneakyThrows
     public JwtResponse loginUser(@Valid UserLogin request){
         User user = (User) loadUserByUsername(request.email());
-        if (!Objects.equals(user.getPassword(), request.password())){
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new WrongDataLogin("Incorrect login or password");
         }
+
         String token = tokenUtils.generateToken(user);
         return new JwtResponse(token);
     }
@@ -57,5 +68,38 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepository.findByEmail(email).orElseThrow(() -> new WrongDataLogin("Incorrect login or password")
         );
+    }
+
+    @SneakyThrows
+    public UserProfileResponse getProfile(Authentication authentication) {
+        UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        return new UserProfileResponse(user.getEmail(), user.getName(), user.getSurname());
+    }
+
+    @SneakyThrows
+    public UserProfileResponse redactProfile(@Valid UserProfileResponse userProfileResponse, Authentication authentication) {
+        UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+
+        Optional<User> existingUser = userRepository.findByEmail(userProfileResponse.email());
+        if (existingUser.isPresent() && !existingUser.get().getId().equals(user.getId())) {
+            throw new UserAlreadyExistException("User with email: " + userProfileResponse.email() + " already exist");
+        }
+
+        user.setEmail(userProfileResponse.email());
+        user.setName(userProfileResponse.name());
+        user.setSurname(userProfileResponse.surname());
+        userRepository.save(user);
+        return userProfileResponse;
+    }
+
+    @SneakyThrows
+    public Password changePassword(@Valid Password password, Authentication authentication) {
+        UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+
+        user.setPassword(passwordEncoder.encode(password.password()));
+        return password;
     }
 }

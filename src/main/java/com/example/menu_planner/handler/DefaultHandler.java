@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -58,5 +59,18 @@ public class DefaultHandler {
     @ExceptionHandler(value = WrongDataLogin.class)
     public ExceptionResponse handleWrongDataLoginException(WrongDataLogin ex) {
         return new ExceptionResponse(ex.getMessage());
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(value = NotFoundException.class)
+    public ExceptionResponse handleNotFoundException(NotFoundException ex) {
+        return new ExceptionResponse(ex.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(value = HttpClientErrorException.Unauthorized.class)
+    public ExceptionResponse handleUnauthorizedException(HttpClientErrorException.Unauthorized ex){
+        return new ExceptionResponse("Not authorized");
     }
 }
