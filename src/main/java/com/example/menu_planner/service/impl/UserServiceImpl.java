@@ -13,10 +13,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -30,14 +32,16 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService, UserDetailsService {
     private final UserRepository userRepository;
     private final JwtTokenUtils tokenUtils;
+    private final PasswordEncoder passwordEncoder;
 
     @SneakyThrows
     public JwtResponse registrationUser(@Valid UserRegistration userRegistration){
         if (userRepository.findByEmail(userRegistration.email()).isPresent()){
             throw new UserAlreadyExistException("User with email: " + userRegistration.email() + " already exist");
         }
-
-        User user = User.of(null, userRegistration.name(), userRegistration.surname(), userRegistration.password(), userRegistration.email(), "ROLE_USER");
+        String encodedPassword = passwordEncoder.encode(userRegistration.password());
+        System.out.println(encodedPassword);
+        User user = User.of(null, userRegistration.name(), userRegistration.surname(), encodedPassword, userRegistration.email(), "ROLE_USER");
         User savedUser = userRepository.save(user);
         String token = tokenUtils.generateToken(savedUser);
         return new JwtResponse(token);
@@ -46,9 +50,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @SneakyThrows
     public JwtResponse loginUser(@Valid UserLogin request){
         User user = (User) loadUserByUsername(request.email());
-        if (!Objects.equals(user.getPassword(), request.password())){
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new WrongDataLogin("Incorrect login or password");
         }
+
         String token = tokenUtils.generateToken(user);
         return new JwtResponse(token);
     }
