@@ -23,4 +23,13 @@ public class Ingridient {
 
     @Column(name = "is_liquid")
     private Boolean is_liquid;
+
+    @Column(name = "protein")
+    private Integer protein;
+
+    @Column(name = "fat")
+    private Integer fat;
+
+    @Column(name = "carbohydrates")
+    private Integer carbohydrates;
 }

@@ -27,9 +27,28 @@ public class Dish {
     @JoinColumn(name= "user_id", referencedColumnName = "id")
     private UUID user_id;
 
-    @OneToMany(mappedBy = "dish", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Category> categories;
+    @ManyToMany
+    @JoinTable(
+            name = "dishes_categories",
+            joinColumns = @JoinColumn(name = "dish_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private Set<Category> categories = new HashSet<>();
 
-    @OneToMany(mappedBy = "dish", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Tag> tags;
+    @ManyToMany
+    @JoinTable(
+            name = "dishes_tags",
+            joinColumns = @JoinColumn(name = "dish_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> tags = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "dishes_ingridients",
+            joinColumns = @JoinColumn(name = "dish_id"),
+            inverseJoinColumns = @JoinColumn(name = "ingridient_id")
+    )
+    private List<Ingridient> ingridients = new ArrayList<>();
+
 }
