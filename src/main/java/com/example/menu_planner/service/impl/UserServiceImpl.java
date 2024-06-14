@@ -2,7 +2,7 @@ package com.example.menu_planner.service.impl;
 
 import com.example.menu_planner.exception.NotFoundException;
 import com.example.menu_planner.exception.UserAlreadyExistException;
-import com.example.menu_planner.exception.WrongDataLogin;
+import com.example.menu_planner.exception.WrongData;
 import com.example.menu_planner.model.dtoInput.Password;
 import com.example.menu_planner.model.dtoInput.UserLogin;
 import com.example.menu_planner.model.dtoInput.UserRegistration;
@@ -16,9 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,10 +24,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Validated
@@ -57,7 +53,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     public JwtResponse loginUser(@Valid UserLogin request){
         User user = (User) loadUserByUsername(request.email());
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new WrongDataLogin("Incorrect login or password");
+            throw new WrongData("Incorrect login or password");
         }
 
         String token = tokenUtils.generateToken(user);
@@ -66,7 +62,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return userRepository.findByEmail(email).orElseThrow(() -> new WrongDataLogin("Incorrect login or password")
+        return userRepository.findByEmail(email).orElseThrow(() -> new WrongData("Incorrect login or password")
         );
     }
 

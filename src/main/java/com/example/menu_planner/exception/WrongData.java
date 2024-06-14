@@ -2,10 +2,10 @@ package com.example.menu_planner.exception;
 
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-public class WrongDataLogin extends UsernameNotFoundException
+public class WrongData extends UsernameNotFoundException
 {
 
-    public WrongDataLogin(String message) {
+    public WrongData(String message) {
         super(message);
     }
 }
