@@ -5,8 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Data
@@ -27,4 +26,10 @@ public class Dish {
 
     @JoinColumn(name= "user_id", referencedColumnName = "id")
     private UUID user_id;
+
+    @OneToMany(mappedBy = "dish", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Category> categories;
+
+    @OneToMany(mappedBy = "dish", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Tag> tags;
 }
