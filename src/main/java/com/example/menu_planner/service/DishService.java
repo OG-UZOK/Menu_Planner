@@ -1,5 +1,6 @@
 package com.example.menu_planner.service;
 
+import com.example.menu_planner.model.dtoInput.DishCreateRequest;
 import com.example.menu_planner.model.dtoInput.Password;
 import com.example.menu_planner.model.dtoInput.UserLogin;
 import com.example.menu_planner.model.dtoInput.UserRegistration;
@@ -10,5 +11,5 @@ import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 
 public interface DishService {
-    public String createDish(Dish dish);
+    public Dish createDish(@Valid DishCreateRequest dish, Authentication authentication);
 }

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Entity
@@ -16,16 +17,16 @@ public class Dish {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name="id")
-    UUID id;
+    private UUID id;
 
     @Column(name= "name", columnDefinition = "VARCHAR(255)")
     private String name;
 
     @Column(name= "date", columnDefinition = "DATE")
-    private Date date;
+    private LocalDate date;
 
     @JoinColumn(name= "user_id", referencedColumnName = "id")
-    private UUID user_id;
+    private UUID userId;
 
     @ManyToMany
     @JoinTable(
@@ -43,12 +44,18 @@ public class Dish {
     )
     private Set<Tag> tags = new HashSet<>();
 
-    @ManyToMany
-    @JoinTable(
-            name = "dishes_ingridients",
-            joinColumns = @JoinColumn(name = "dish_id"),
-            inverseJoinColumns = @JoinColumn(name = "ingridient_id")
-    )
-    private List<Ingridient> ingridients = new ArrayList<>();
+    @OneToMany(mappedBy = "dish", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<IngridientInDish> ingridients = new ArrayList<>();
 
+    @Column(name="calories")
+    private Integer calories;
+
+    @Column(name="proteins")
+    private Integer proteins;
+
+    @Column(name="fats")
+    private Integer fats;
+
+    @Column(name="carbohydrates")
+    private Integer carbohydrates;
 }
