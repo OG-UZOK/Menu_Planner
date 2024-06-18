@@ -24,14 +24,14 @@ public class StepServiceImpl implements StepService {
     private final StepRepository stepRepository;
     private static final String UPLOAD_DIR = "uploadsStep/";
     @SneakyThrows
-    public UUID upload(@Valid MultipartFile image, Authentication authentication) {
+    public String upload(@Valid MultipartFile image, Authentication authentication) {
         UUID idImage = UUID.randomUUID();
-        String fileName = idImage.toString() + "_" + image.getOriginalFilename();
+        String fileName = idImage.toString() + ".png";
         Path path = Paths.get(UPLOAD_DIR + fileName);
 
         log.info("Current working directory: " + System.getProperty("user.dir"));
         Files.createDirectories(path.getParent());
         Files.write(path, image.getBytes());
-        return idImage;
+        return fileName;
     }
 }

@@ -44,7 +44,7 @@ public class Dish {
     )
     private Set<Tag> tags = new HashSet<>();
 
-    @OneToMany(mappedBy = "dish", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "dish_id", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<IngridientInDish> ingridients = new ArrayList<>();
 
     @Column(name="calories")
@@ -59,11 +59,4 @@ public class Dish {
     @Column(name="carbohydrates")
     private Integer carbohydrates;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinTable(
-            name = "steps",
-            joinColumns = @JoinColumn(name = "dish_id"),
-            inverseJoinColumns = @JoinColumn(name = "step_id")
-    )
-    private List<Step> steps = new ArrayList<>();
 }

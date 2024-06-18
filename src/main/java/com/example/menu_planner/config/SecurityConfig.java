@@ -34,6 +34,7 @@ public class SecurityConfig {
                         .requestMatchers("/ingridient/create").authenticated()
                         .requestMatchers("/category/create").authenticated()
                         .requestMatchers("/tag/create").authenticated()
+                        .requestMatchers("/step/image/upload").authenticated()
                         .requestMatchers("/user/password").authenticated()
                         .anyRequest().permitAll()
                 )

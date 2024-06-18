@@ -18,9 +18,8 @@ public class IngridientInDish {
     @Column(name = "id")
     private UUID id;
 
-    @ManyToOne
     @JoinColumn(name = "dish_id")
-    private Dish dish;
+    private UUID dish_id;
 
     @ManyToOne
     @JoinColumn(name = "ingridient_id")

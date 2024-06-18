@@ -22,7 +22,7 @@ public class StepController {
     private final StepService service;
     @PostMapping("/image/upload")
     @ResponseBody
-    public UUID upload(@Valid @NotNull @RequestParam("image") MultipartFile image, Authentication authentication){
+    public String upload(@Valid @NotNull @RequestParam("image") MultipartFile image, Authentication authentication){
         return service.upload(image, authentication);
     }
 }

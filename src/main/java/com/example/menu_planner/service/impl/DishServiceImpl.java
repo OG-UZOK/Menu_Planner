@@ -33,6 +33,7 @@ public class DishServiceImpl implements DishService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final JwtTokenUtils tokenUtils;
+    private final StepRepository stepRepository;
     private final IngridientRepository ingridientRepository;
     private final IngridientInDishRepository ingridientInDishRepository;
 
@@ -65,6 +66,9 @@ public class DishServiceImpl implements DishService {
             }
         }
 
+        UUID idDish = UUID.randomUUID();
+
+
         if (dish.ingredient() != null) {
             for (IngridientInDishRequest ingridientRequest : dish.ingredient()) {
                 Ingridient currentIngridient = ingridientRepository.findById(ingridientRequest.ingridient_id()).orElseThrow(() -> new NotFoundException("Ingridient not found"));
@@ -72,7 +76,7 @@ public class DishServiceImpl implements DishService {
                 totalFatDish += currentIngridient.getFat() * ingridientRequest.amount();
                 totalCarbohydrateDish += currentIngridient.getCarbohydrates() * ingridientRequest.amount();
 
-                IngridientInDish ingridientInDish = IngridientInDish.of(null, null, currentIngridient, ingridientRequest.amount(), ingridientRequest.unit());
+                IngridientInDish ingridientInDish = IngridientInDish.of(null, idDish, currentIngridient, ingridientRequest.amount(), ingridientRequest.unit());
                 ingridientInDishList.add(ingridientInDish);
             }
         }
@@ -82,26 +86,20 @@ public class DishServiceImpl implements DishService {
 
         LocalDate currentDate = LocalDate.now();
 
-        UUID idDish = UUID.randomUUID();
 
-//        if (dish.steps() != null) {
-//            for (StepRequest step : dish.steps()) {
-//                String fileName = UUID.randomUUID().toString() + "_" + step.image().getOriginalFilename();
-//                Path path = Paths.get(UPLOAD_DIR + fileName);
-//                Files.createDirectories(path.getParent());
-//                Files.write(path, step.image().getBytes());
-//                Step currentStep = Step.of(null, step.number(), idDish,  step.title(), path.toString(), step.description());
-//                stepArrayList.add(currentStep);
-//            }
-//        }
+        if (dish.steps() != null) {
+            for (StepRequest step : dish.steps()) {
+                Step currentStep = Step.of(null, step.number(), idDish,  step.title(), step.image(), step.description());
+                stepRepository.save(currentStep);
+            }
+        }
 
-        Dish newDish = Dish.of(idDish, dish.name(), currentDate, userId, categories, tags, new ArrayList<>(), totalCaloriesDish, totalProteinDish, totalFatDish, totalCarbohydrateDish, stepArrayList);
+        Dish newDish = Dish.of(idDish, dish.name(), currentDate, userId, categories, tags, ingridientInDishList,
+                totalCaloriesDish, totalProteinDish, totalFatDish, totalCarbohydrateDish);
+
+        // Сохранение блюда в репозитории
         newDish = dishRepository.save(newDish);
 
-        for (IngridientInDish ingridientInDish : ingridientInDishList) {
-            ingridientInDish.setDish(newDish);
-            ingridientInDishRepository.save(ingridientInDish);
-        }
 
         return newDish;
     }

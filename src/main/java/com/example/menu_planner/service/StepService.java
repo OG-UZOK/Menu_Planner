@@ -7,5 +7,5 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.UUID;
 
 public interface StepService {
-    public UUID upload(@Valid MultipartFile image, Authentication authentication);
+    public String upload(@Valid MultipartFile image, Authentication authentication);
 }

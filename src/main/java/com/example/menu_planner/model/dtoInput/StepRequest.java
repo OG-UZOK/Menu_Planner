@@ -15,6 +15,9 @@ public record StepRequest(
         @NotBlank(message = "title cannot be empty")
         String title,
 
+        @NotBlank(message = "image cannot be empty")
+        String image,
+
         @NotBlank(message = "description cannot be empty")
         String description
 ) {
