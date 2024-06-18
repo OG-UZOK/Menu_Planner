@@ -58,4 +58,12 @@ public class Dish {
 
     @Column(name="carbohydrates")
     private Integer carbohydrates;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinTable(
+            name = "steps",
+            joinColumns = @JoinColumn(name = "dish_id"),
+            inverseJoinColumns = @JoinColumn(name = "step_id")
+    )
+    private List<Step> steps = new ArrayList<>();
 }

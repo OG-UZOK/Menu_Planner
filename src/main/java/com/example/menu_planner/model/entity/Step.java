@@ -28,7 +28,7 @@ public class Step {
     private String title;
 
     @Column(name = "image")
-    private byte[] image;
+    private String image;
 
     @Column(name = "description")
     private String description;

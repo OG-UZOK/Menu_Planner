@@ -1,5 +1,6 @@
 package com.example.menu_planner.model.dtoInput;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
 import java.util.Date;
@@ -17,6 +18,9 @@ public record DishCreateRequest(
         Set<UUID> tagIds,
 
         @NotEmpty(message = "Ingridients cannot be empty")
-        List<IngridientInDishRequest> ingredient
+        @Valid List<IngridientInDishRequest> ingredient,
+
+        @NotEmpty(message = "Steps cannot be empty")
+        @Valid List<StepRequest> steps
 ) {
 }

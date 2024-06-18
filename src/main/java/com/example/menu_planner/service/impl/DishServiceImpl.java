@@ -3,6 +3,7 @@ package com.example.menu_planner.service.impl;
 import com.example.menu_planner.exception.NotFoundException;
 import com.example.menu_planner.model.dtoInput.DishCreateRequest;
 import com.example.menu_planner.model.dtoInput.IngridientInDishRequest;
+import com.example.menu_planner.model.dtoInput.StepRequest;
 import com.example.menu_planner.model.entity.*;
 import com.example.menu_planner.model.util.JwtTokenUtils;
 import com.example.menu_planner.repository.*;
@@ -15,6 +16,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -23,6 +27,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class DishServiceImpl implements DishService {
+    private static final String UPLOAD_DIR = "uploadsStep/";
     private final DishRepository dishRepository;
     private final TagRepository tagRepository;
     private final CategoryRepository categoryRepository;
@@ -44,6 +49,7 @@ public class DishServiceImpl implements DishService {
         List<IngridientInDish> ingridientInDishList = new ArrayList<>();
         Set<Tag> tags = new HashSet<>();
         Set<Category> categories = new HashSet<>();
+        List<Step> stepArrayList = new ArrayList<>();
 
         if (dish.tagIds() != null) {
             for (UUID tag : dish.tagIds()) {
@@ -71,11 +77,25 @@ public class DishServiceImpl implements DishService {
             }
         }
 
+
         totalCaloriesDish = 4 * totalProteinDish + 4 * totalCarbohydrateDish + 9 * totalFatDish;
 
         LocalDate currentDate = LocalDate.now();
 
-        Dish newDish = Dish.of(null, dish.name(), currentDate, userId, categories, tags, new ArrayList<>(), totalCaloriesDish, totalProteinDish, totalFatDish, totalCarbohydrateDish);
+        UUID idDish = UUID.randomUUID();
+
+//        if (dish.steps() != null) {
+//            for (StepRequest step : dish.steps()) {
+//                String fileName = UUID.randomUUID().toString() + "_" + step.image().getOriginalFilename();
+//                Path path = Paths.get(UPLOAD_DIR + fileName);
+//                Files.createDirectories(path.getParent());
+//                Files.write(path, step.image().getBytes());
+//                Step currentStep = Step.of(null, step.number(), idDish,  step.title(), path.toString(), step.description());
+//                stepArrayList.add(currentStep);
+//            }
+//        }
+
+        Dish newDish = Dish.of(idDish, dish.name(), currentDate, userId, categories, tags, new ArrayList<>(), totalCaloriesDish, totalProteinDish, totalFatDish, totalCarbohydrateDish, stepArrayList);
         newDish = dishRepository.save(newDish);
 
         for (IngridientInDish ingridientInDish : ingridientInDishList) {
