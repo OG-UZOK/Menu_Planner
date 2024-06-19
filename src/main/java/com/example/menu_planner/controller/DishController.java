@@ -2,6 +2,7 @@ package com.example.menu_planner.controller;
 
 import com.example.menu_planner.model.dtoInput.DishCreateRequest;
 import com.example.menu_planner.model.dtoInput.UserRegistration;
+import com.example.menu_planner.model.dtoOutput.DishResponse;
 import com.example.menu_planner.model.dtoOutput.JwtResponse;
 import com.example.menu_planner.model.entity.Dish;
 import com.example.menu_planner.repository.DishRepository;
@@ -40,5 +41,10 @@ public class DishController {
     public String deleteDish(Authentication authentication,@Valid @NotNull(message="Id cant be empty")
     @RequestParam("id") UUID id){
         return dishService.deleteDish(authentication, id);
+    }
+
+    @GetMapping()
+    public DishResponse getDishById(@Valid @NotNull(message="Id cant be empty") @RequestParam("id") UUID id, Authentication authentication){
+        return dishService.getDishById(id, authentication);
     }
 }

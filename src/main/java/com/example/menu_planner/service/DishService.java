@@ -4,6 +4,7 @@ import com.example.menu_planner.model.dtoInput.DishCreateRequest;
 import com.example.menu_planner.model.dtoInput.Password;
 import com.example.menu_planner.model.dtoInput.UserLogin;
 import com.example.menu_planner.model.dtoInput.UserRegistration;
+import com.example.menu_planner.model.dtoOutput.DishResponse;
 import com.example.menu_planner.model.dtoOutput.JwtResponse;
 import com.example.menu_planner.model.dtoOutput.UserProfileResponse;
 import com.example.menu_planner.model.entity.Dish;
@@ -18,4 +19,6 @@ public interface DishService {
     public Dish redactDish(@Valid DishCreateRequest request, Authentication authentication, UUID id);
 
     public String deleteDish(Authentication authentication,@Valid UUID dish_id);
+
+    public DishResponse getDishById(@Valid UUID id, Authentication authentication);
 }

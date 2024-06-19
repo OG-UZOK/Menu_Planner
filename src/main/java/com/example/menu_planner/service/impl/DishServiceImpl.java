@@ -5,6 +5,7 @@ import com.example.menu_planner.exception.NotFoundException;
 import com.example.menu_planner.model.dtoInput.DishCreateRequest;
 import com.example.menu_planner.model.dtoInput.IngridientInDishRequest;
 import com.example.menu_planner.model.dtoInput.StepRequest;
+import com.example.menu_planner.model.dtoOutput.DishResponse;
 import com.example.menu_planner.model.entity.*;
 import com.example.menu_planner.model.util.JwtTokenUtils;
 import com.example.menu_planner.repository.*;
@@ -217,5 +218,17 @@ public class DishServiceImpl implements DishService {
 
 
         return "success";
+    }
+
+    @SneakyThrows
+    public DishResponse getDishById(@Valid UUID dish_id, Authentication authentication){
+        UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        Dish dish = dishRepository.findById(dish_id).orElseThrow(() -> new NotFoundException("Dish with the id not found"));
+
+        List<Step> listSteps = stepRepository.findByDishId(dish.getId());
+
+        DishResponse dishResponse = new DishResponse(dish, listSteps);
+        return dishResponse;
     }
 }
