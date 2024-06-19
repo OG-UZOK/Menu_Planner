@@ -44,13 +44,14 @@ public class StepServiceImpl implements StepService {
     @SneakyThrows
     public Resource download(@Valid String imageName, Authentication authentication){
         try {
-            Path filePath = Paths.get(UPLOAD_DIR).resolve(imageName);
+            String name = imageName + ".png";
+            Path filePath = Paths.get(UPLOAD_DIR).resolve(name);
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists() || resource.isReadable()) {
                 return resource;
             } else {
-                throw new NotFoundException("Could not find or read file: " + imageName);
+                throw new NotFoundException("Could not find or read file: " + name);
             }
         } catch (NotFoundException ex){
             throw new RuntimeException("Could not find or read file: " + imageName);

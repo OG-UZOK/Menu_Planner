@@ -32,7 +32,8 @@ public class StepController {
 
     @GetMapping("/image/download/{name}")
     @ResponseBody
-    public ResponseEntity<Resource> upload(@Valid @NotBlank @PathVariable("name") String imageName, Authentication authentication){
+    public ResponseEntity<Resource> upload(@Valid @NotBlank(message = "Image ID cannot be null")
+                                               @PathVariable("name") String imageName, Authentication authentication){
          Resource resource = service.download(imageName, authentication);
          return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
