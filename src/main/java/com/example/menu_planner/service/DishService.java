@@ -16,4 +16,6 @@ public interface DishService {
     public Dish createDish(@Valid DishCreateRequest dish, Authentication authentication);
 
     public Dish redactDish(@Valid DishCreateRequest request, Authentication authentication, UUID id);
+
+    public String deleteDish(Authentication authentication,@Valid UUID dish_id);
 }

@@ -34,4 +34,11 @@ public class DishController {
                                                                                 @RequestParam("id") UUID id){
         return dishService.redactDish(request, authentication, id);
     }
+
+    @DeleteMapping("delete")
+    @ResponseBody
+    public String deleteDish(Authentication authentication,@Valid @NotNull(message="Id cant be empty")
+    @RequestParam("id") UUID id){
+        return dishService.deleteDish(authentication, id);
+    }
 }

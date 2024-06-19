@@ -114,7 +114,7 @@ public class DishServiceImpl implements DishService {
         Dish oldDish = dishRepository.findById(id).orElseThrow(() -> new NotFoundException("Dish with the id not found"));
 
         // Check if the user has permission to update the dish
-        if (!oldDish.getUserId().equals(userId)) {
+        if (!oldDish.getUserId().equals(userId) && !user.getRole().equals("ADMIN")) {
             throw new ForbiddenException("You don't have sufficient rights");
         }
 
@@ -192,5 +192,30 @@ public class DishServiceImpl implements DishService {
         oldDish.setCarbohydrates(totalCarbohydrateDish);
 
         return dishRepository.save(oldDish);
+    }
+    @SneakyThrows
+    public String deleteDish(Authentication authentication, @Valid UUID dish_id) {
+        UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+
+        Dish dish = dishRepository.findById(dish_id).orElseThrow(() -> new NotFoundException("Dish with the id not found"));
+
+        // Check if the user has permission to update the dish
+        if (!dish.getUserId().equals(userId) && !user.getRole().equals("ADMIN")) {
+            throw new ForbiddenException("You don't have sufficient rights");
+        }
+
+        // Delete old steps (if any)
+        List<Step> listOldSteps = stepRepository.findByDishId(dish.getId());
+        if (listOldSteps != null) {
+            for (Step oldStep : listOldSteps) {
+                stepRepository.delete(oldStep);
+            }
+        }
+
+        dishRepository.delete(dish);
+
+
+        return "success";
     }
 }
