@@ -80,11 +80,11 @@ public class DefaultHandler {
         return new ExceptionResponse(ex.getMessage());
     }
 
-    @ResponseBody
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    @ExceptionHandler(value = RuntimeException.class)
-    public ExceptionResponse handleRuntimeException(RuntimeException ex) {
-        return new ExceptionResponse(ex.getMessage());
-    }
+//    @ResponseBody
+//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+//    @ExceptionHandler(value = RuntimeException.class)
+//    public ExceptionResponse handleRuntimeException(RuntimeException ex) {
+//        return new ExceptionResponse(ex.getMessage());
+//    }
 
 }

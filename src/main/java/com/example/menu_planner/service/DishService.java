@@ -11,6 +11,7 @@ import com.example.menu_planner.model.entity.Dish;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface DishService {
@@ -21,4 +22,6 @@ public interface DishService {
     public String deleteDish(Authentication authentication,@Valid UUID dish_id);
 
     public DishResponse getDishById(@Valid UUID id, Authentication authentication);
+
+    public List<Dish> getDishAll(Authentication authentication, String name, Boolean myDishes);
 }

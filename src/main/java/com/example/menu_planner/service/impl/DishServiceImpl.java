@@ -231,4 +231,11 @@ public class DishServiceImpl implements DishService {
         DishResponse dishResponse = new DishResponse(dish, listSteps);
         return dishResponse;
     }
+
+    @SneakyThrows
+    public List<Dish> getDishAll(Authentication authentication, String name, Boolean myDishes){
+        List<Dish> dishList = dishRepository.findAll();
+
+        return dishList;
+    }
 }

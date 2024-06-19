@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -26,6 +27,7 @@ public class DishController {
     @PostMapping("create")
     @ResponseBody
     public Dish createDish(@RequestBody DishCreateRequest request, Authentication authentication){
+        System.out.println("request");
         return dishService.createDish(request, authentication);
     }
 
@@ -46,5 +48,11 @@ public class DishController {
     @GetMapping()
     public DishResponse getDishById(@Valid @NotNull(message="Id cant be empty") @RequestParam("id") UUID id, Authentication authentication){
         return dishService.getDishById(id, authentication);
+    }
+
+    @GetMapping("all")
+    public List<Dish> getDishById(Authentication authentication, @RequestParam(value = "name", required = false) String name,
+                                  @RequestParam(value = "myDishes", required = false) Boolean myDishes){
+        return dishService.getDishAll(authentication, name, myDishes);
     }
 }
