@@ -1,5 +1,6 @@
 package com.example.menu_planner.service.impl;
 
+import com.example.menu_planner.exception.ForbiddenException;
 import com.example.menu_planner.exception.NotFoundException;
 import com.example.menu_planner.model.dtoInput.DishCreateRequest;
 import com.example.menu_planner.model.dtoInput.IngridientInDishRequest;
@@ -50,7 +51,6 @@ public class DishServiceImpl implements DishService {
         List<IngridientInDish> ingridientInDishList = new ArrayList<>();
         Set<Tag> tags = new HashSet<>();
         Set<Category> categories = new HashSet<>();
-        List<Step> stepArrayList = new ArrayList<>();
 
         if (dish.tagIds() != null) {
             for (UUID tag : dish.tagIds()) {
@@ -102,5 +102,95 @@ public class DishServiceImpl implements DishService {
 
 
         return newDish;
+    }
+
+    @SneakyThrows
+    public Dish redactDish(@Valid DishCreateRequest request, Authentication authentication, UUID id) {
+        // Get user ID from authentication token
+        UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+
+        // Retrieve and validate the existing dish
+        Dish oldDish = dishRepository.findById(id).orElseThrow(() -> new NotFoundException("Dish with the id not found"));
+
+        // Check if the user has permission to update the dish
+        if (!oldDish.getUserId().equals(userId)) {
+            throw new ForbiddenException("You don't have sufficient rights");
+        }
+
+        // Initialize nutritional values
+        Integer totalProteinDish = 0;
+        Integer totalFatDish = 0;
+        Integer totalCarbohydrateDish = 0;
+        Integer totalCaloriesDish = 0;
+
+        // Initialize lists for ingredients, tags, and categories
+        Set<Category> categories = new HashSet<>();
+        Set<Tag> tags = new HashSet<>();
+        List<IngridientInDish> ingredientInDishList = new ArrayList<>();
+
+        // Retrieve and validate categories
+        if (request.categoryIds() != null) {
+            for (UUID category : request.categoryIds()) {
+                Category currentCategory = categoryRepository.findById(category).orElseThrow(() -> new NotFoundException("Category not found"));
+                categories.add(currentCategory);
+            }
+        }
+
+        // Retrieve and validate tags
+        if (request.tagIds() != null) {
+            for (UUID tag : request.tagIds()) {
+                Tag currentTag = tagRepository.findById(tag).orElseThrow(() -> new NotFoundException("Tag not found"));
+                tags.add(currentTag);
+            }
+        }
+
+        // Retrieve and validate ingredients
+        if (request.ingredient() != null) {
+            for (IngridientInDishRequest ingredientRequest : request.ingredient()) {
+                Ingridient currentIngredient = ingridientRepository.findById(ingredientRequest.ingridient_id()).orElseThrow(() -> new NotFoundException("Ingredient not found"));
+                totalProteinDish += currentIngredient.getProtein() * ingredientRequest.amount();
+                totalFatDish += currentIngredient.getFat() * ingredientRequest.amount();
+                totalCarbohydrateDish += currentIngredient.getCarbohydrates() * ingredientRequest.amount();
+
+                IngridientInDish ingredientInDish = IngridientInDish.of(null, oldDish.getId(), currentIngredient, ingredientRequest.amount(), ingredientRequest.unit());
+                ingredientInDishList.add(ingredientInDish);
+            }
+        }
+
+        System.out.println(ingredientInDishList);
+
+        // Calculate total calories
+        totalCaloriesDish = 4 * totalProteinDish + 4 * totalCarbohydrateDish + 9 * totalFatDish;
+
+        // Delete old steps (if any)
+        List<Step> listOldSteps = stepRepository.findByDishId(oldDish.getId());
+        if (listOldSteps != null) {
+            for (Step oldStep : listOldSteps) {
+                stepRepository.delete(oldStep);
+            }
+        }
+
+        // Save new steps
+        if (request.steps() != null) {
+            for (StepRequest step : request.steps()) {
+                Step currentStep = Step.of(null, step.number(), oldDish.getId(), step.title(), step.image(), step.description());
+                stepRepository.save(currentStep);
+            }
+        }
+
+        oldDish.getIngridients().clear();
+        oldDish.getIngridients().addAll(ingredientInDishList);
+
+        // Update the existing dish with the new details
+        oldDish.setName(request.name());
+        oldDish.setCategories(categories);
+        oldDish.setTags(tags);
+        oldDish.setCalories(totalCaloriesDish);
+        oldDish.setProteins(totalProteinDish);
+        oldDish.setFats(totalFatDish);
+        oldDish.setCarbohydrates(totalCarbohydrateDish);
+
+        return dishRepository.save(oldDish);
     }
 }

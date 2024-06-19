@@ -15,7 +15,6 @@ import java.util.*;
 @Table(name="dishes")
 public class Dish {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name="id")
     private UUID id;
 
