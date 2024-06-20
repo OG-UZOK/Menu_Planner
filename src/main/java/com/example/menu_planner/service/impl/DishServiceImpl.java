@@ -10,10 +10,13 @@ import com.example.menu_planner.model.entity.*;
 import com.example.menu_planner.model.util.JwtTokenUtils;
 import com.example.menu_planner.repository.*;
 import com.example.menu_planner.service.DishService;
+import com.example.menu_planner.specification.DishSpecification;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -37,6 +40,7 @@ public class DishServiceImpl implements DishService {
     private final JwtTokenUtils tokenUtils;
     private final StepRepository stepRepository;
     private final IngridientRepository ingridientRepository;
+    private final TypeOfMealRepository typeOfMealRepository;
     private final IngridientInDishRepository ingridientInDishRepository;
 
     @SneakyThrows
@@ -52,6 +56,7 @@ public class DishServiceImpl implements DishService {
         List<IngridientInDish> ingridientInDishList = new ArrayList<>();
         Set<Tag> tags = new HashSet<>();
         Set<Category> categories = new HashSet<>();
+        Set<TypeOfMeal> types = new HashSet<>();
 
         if (dish.tagIds() != null) {
             for (UUID tag : dish.tagIds()) {
@@ -64,6 +69,13 @@ public class DishServiceImpl implements DishService {
             for (UUID category : dish.categoryIds()) {
                 Category currentCategory = categoryRepository.findById(category).orElseThrow(() -> new NotFoundException("Category not found"));
                 categories.add(currentCategory);
+            }
+        }
+
+        if (dish.typeIds() != null) {
+            for (UUID type : dish.typeIds()) {
+                TypeOfMeal currentType = typeOfMealRepository.findById(type).orElseThrow(() -> new NotFoundException("Type of meal not found"));
+                types.add(currentType);
             }
         }
 
@@ -82,6 +94,9 @@ public class DishServiceImpl implements DishService {
             }
         }
 
+        totalProteinDish = totalProteinDish/dish.amountPortion();
+        totalCarbohydrateDish = totalCarbohydrateDish/dish.amountPortion();
+        totalFatDish = totalFatDish/dish.amountPortion();
 
         totalCaloriesDish = 4 * totalProteinDish + 4 * totalCarbohydrateDish + 9 * totalFatDish;
 
@@ -95,7 +110,7 @@ public class DishServiceImpl implements DishService {
             }
         }
 
-        Dish newDish = Dish.of(idDish, dish.name(), currentDate, userId, categories, tags, ingridientInDishList,
+        Dish newDish = Dish.of(idDish, dish.name(), currentDate,dish.amountPortion(), dish.cookingTime(), userId, categories, tags, types, ingridientInDishList,
                 totalCaloriesDish, totalProteinDish, totalFatDish, totalCarbohydrateDish);
 
         // Сохранение блюда в репозитории
@@ -129,6 +144,7 @@ public class DishServiceImpl implements DishService {
         Set<Category> categories = new HashSet<>();
         Set<Tag> tags = new HashSet<>();
         List<IngridientInDish> ingredientInDishList = new ArrayList<>();
+        Set<TypeOfMeal> types = new HashSet<>();
 
         // Retrieve and validate categories
         if (request.categoryIds() != null) {
@@ -146,6 +162,13 @@ public class DishServiceImpl implements DishService {
             }
         }
 
+        if (request.typeIds() != null) {
+            for (UUID type : request.typeIds()) {
+                TypeOfMeal currentType = typeOfMealRepository.findById(type).orElseThrow(() -> new NotFoundException("Type of meal not found"));
+                types.add(currentType);
+            }
+        }
+
         // Retrieve and validate ingredients
         if (request.ingredient() != null) {
             for (IngridientInDishRequest ingredientRequest : request.ingredient()) {
@@ -159,7 +182,9 @@ public class DishServiceImpl implements DishService {
             }
         }
 
-        System.out.println(ingredientInDishList);
+        totalProteinDish = totalProteinDish/request.amountPortion();
+        totalCarbohydrateDish = totalCarbohydrateDish/request.amountPortion();
+        totalFatDish = totalFatDish/request.amountPortion();
 
         // Calculate total calories
         totalCaloriesDish = 4 * totalProteinDish + 4 * totalCarbohydrateDish + 9 * totalFatDish;
@@ -187,6 +212,9 @@ public class DishServiceImpl implements DishService {
         oldDish.setName(request.name());
         oldDish.setCategories(categories);
         oldDish.setTags(tags);
+        oldDish.setTypes(types);
+        oldDish.setCookingTime(request.cookingTime());
+        oldDish.setAmountPortion(request.amountPortion());
         oldDish.setCalories(totalCaloriesDish);
         oldDish.setProteins(totalProteinDish);
         oldDish.setFats(totalFatDish);
@@ -233,9 +261,42 @@ public class DishServiceImpl implements DishService {
     }
 
     @SneakyThrows
-    public List<Dish> getDishAll(Authentication authentication, String name, Boolean myDishes){
-        List<Dish> dishList = dishRepository.findAll();
+    public List<Dish> getDishAll(Authentication authentication, String name, Boolean myDishes,
+                                 List<UUID> tags, List<UUID> categories,
+                                 Double minProteins, Double maxProteins,
+                                 Double minFats, Double maxFats,
+                                 Double minCalories, Double maxCalories,
+                                 Double minCarbohydrates, Double maxCarbohydrates,
+                                 String sortField, String sortOrder, Double cookingTime,
+                                 List<UUID> includeIngredientIds, List<UUID> excludeIngredientIds,
+                                 List<UUID> types){
+        UUID userId = null;
+        if (myDishes != null && myDishes) {
+            userId = tokenUtils.getUserIdFromAuthentication(authentication);
+        }
+        Specification<Dish> spec = Specification.where(DishSpecification.hasName(name))
+                .and(DishSpecification.isOwnedByUser(userId))
+                .and(DishSpecification.hasTags(tags))
+                .and(DishSpecification.hasCategories(categories))
+                .and(DishSpecification.minProteins(minProteins))
+                .and(DishSpecification.maxProteins(maxProteins))
+                .and(DishSpecification.minFats(minFats))
+                .and(DishSpecification.maxFats(maxFats))
+                .and(DishSpecification.minCalories(minCalories))
+                .and(DishSpecification.maxCalories(maxCalories))
+                .and(DishSpecification.minCarbohydrates(minCarbohydrates))
+                .and(DishSpecification.maxCarbohydrates(maxCarbohydrates))
+                .and(DishSpecification.hasIngredients(includeIngredientIds))
+                .and(DishSpecification.hasNoIngredients(excludeIngredientIds))
+                .and(DishSpecification.maxCookingTime(cookingTime))
+                .and(DishSpecification.hasTypes(types));
 
-        return dishList;
+        Sort sort = Sort.by(Sort.Direction.ASC, sortField != null ? sortField : "name");
+        if ("desc".equalsIgnoreCase(sortOrder)) {
+            sort = sort.descending();
+        }
+
+        return dishRepository.findAll(spec, sort);
+
     }
 }

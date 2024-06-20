@@ -23,5 +23,13 @@ public interface DishService {
 
     public DishResponse getDishById(@Valid UUID id, Authentication authentication);
 
-    public List<Dish> getDishAll(Authentication authentication, String name, Boolean myDishes);
+    public List<Dish> getDishAll(Authentication authentication, String name, Boolean myDishes,
+                                 List<UUID> tags, List<UUID> categories,
+                                 Double minProteins, Double maxProteins,
+                                 Double minFats, Double maxFats,
+                                 Double minCalories, Double maxCalories,
+                                 Double minCarbohydrates, Double maxCarbohydrates,
+                                 String sortField, String sortOrder, Double cookingTime,
+                                 List<UUID> includeIngredientIds, List<UUID> excludeIngredientIds,
+                                 List<UUID> types);
 }

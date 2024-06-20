@@ -51,8 +51,28 @@ public class DishController {
     }
 
     @GetMapping("all")
-    public List<Dish> getDishById(Authentication authentication, @RequestParam(value = "name", required = false) String name,
-                                  @RequestParam(value = "myDishes", required = false) Boolean myDishes){
-        return dishService.getDishAll(authentication, name, myDishes);
+    public List<Dish> getDishById(Authentication authentication,
+                                  @RequestParam(value = "name", required = false) String name,
+                                  @RequestParam(value = "myDishes", required = false) Boolean myDishes,
+                                  @RequestParam(value = "tags", required = false) List<UUID> tags,
+                                  @RequestParam(value = "categories", required = false) List<UUID> categories,
+                                  @RequestParam(value = "minProteins", required = false) Double minProteins,
+                                  @RequestParam(value = "maxProteins", required = false) Double maxProteins,
+                                  @RequestParam(value = "minFats", required = false) Double minFats,
+                                  @RequestParam(value = "maxFats", required = false) Double maxFats,
+                                  @RequestParam(value = "minCalories", required = false) Double minCalories,
+                                  @RequestParam(value = "maxCalories", required = false) Double maxCalories,
+                                  @RequestParam(value = "minCarbohydrates", required = false) Double minCarbohydrates,
+                                  @RequestParam(value = "maxCarbohydrates", required = false) Double maxCarbohydrates,
+                                  @RequestParam(value = "sortField", required = false) String sortField,
+                                  @RequestParam(value = "sortOrder", required = false) String sortOrder,
+                                  @RequestParam(value = "cookingTime", required = false) Double cookingTime,
+                                  @RequestParam(value = "includeIngredients", required = false) List<UUID> includeIngredientIds,
+                                  @RequestParam(value = "excludeIngredients", required = false) List<UUID> excludeIngredientIds,
+                                  @RequestParam(value = "types", required = false) List<UUID> types) {
+        return dishService.getDishAll(authentication, name, myDishes, tags, categories,
+                minProteins, maxProteins, minFats, maxFats,
+                minCalories, maxCalories, minCarbohydrates, maxCarbohydrates,
+                sortField, sortOrder, cookingTime,includeIngredientIds, excludeIngredientIds, types );
     }
 }
