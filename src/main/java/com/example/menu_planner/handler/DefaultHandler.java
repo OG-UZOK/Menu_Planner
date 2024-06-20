@@ -1,16 +1,14 @@
 package com.example.menu_planner.handler;
 
+import com.example.menu_planner.exception.ForbiddenException;
 import com.example.menu_planner.exception.NotFoundException;
 import com.example.menu_planner.exception.UserAlreadyExistException;
-import com.example.menu_planner.exception.WrongDataLogin;
+import com.example.menu_planner.exception.WrongData;
 import com.example.menu_planner.model.dtoOutput.ExceptionResponse;
 import com.example.menu_planner.model.validation.ValidationErrorResponse;
 import com.example.menu_planner.model.validation.Violation;
 import jakarta.validation.ConstraintViolationException;
-import org.apache.catalina.connector.Response;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -56,11 +54,25 @@ public class DefaultHandler {
 
     @ResponseBody
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(value = WrongDataLogin.class)
-    public ExceptionResponse handleWrongDataLoginException(WrongDataLogin ex) {
+    @ExceptionHandler(value = WrongData.class)
+    public ExceptionResponse handleWrongDataLoginException(WrongData ex) {
         return new ExceptionResponse(ex.getMessage());
     }
 
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(value = HttpClientErrorException.Unauthorized.class)
+    public ExceptionResponse handleUnauthorizedException(HttpClientErrorException.Unauthorized ex){
+        return new ExceptionResponse("Not authorized");
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(value = ForbiddenException.class)
+    public ExceptionResponse handleForbiddenException(ForbiddenException ex){
+        return new ExceptionResponse(ex.getMessage());
+    }
     @ResponseBody
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(value = NotFoundException.class)
@@ -68,9 +80,11 @@ public class DefaultHandler {
         return new ExceptionResponse(ex.getMessage());
     }
 
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    @ExceptionHandler(value = HttpClientErrorException.Unauthorized.class)
-    public ExceptionResponse handleUnauthorizedException(HttpClientErrorException.Unauthorized ex){
-        return new ExceptionResponse("Not authorized");
-    }
+//    @ResponseBody
+//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+//    @ExceptionHandler(value = RuntimeException.class)
+//    public ExceptionResponse handleRuntimeException(RuntimeException ex) {
+//        return new ExceptionResponse(ex.getMessage());
+//    }
+
 }

@@ -128,6 +128,7 @@ ALTER TABLE public.ingridients OWNER TO postgres;
 --
 
 CREATE TABLE public.steps (
+    stpe_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     dish_id uuid,
     number integer NOT NULL,
     title character varying(255) NOT NULL,

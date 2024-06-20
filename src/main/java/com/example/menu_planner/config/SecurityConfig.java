@@ -31,6 +31,12 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(c -> c
                         .requestMatchers("/user/profile").authenticated()
+                        .requestMatchers("/ingridient/create").authenticated()
+                        .requestMatchers("/category/create").authenticated()
+                        .requestMatchers("/tag/create").authenticated()
+                        .requestMatchers("/dish/all").authenticated()
+                        .requestMatchers("/step/image/upload").authenticated()
+                        .requestMatchers("/step/image/download/").authenticated()
                         .requestMatchers("/user/password").authenticated()
                         .anyRequest().permitAll()
                 )
