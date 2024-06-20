@@ -11,25 +11,23 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor(staticName = "of")
-@Table(name="steps")
-public class Step {
+@Table(name = "dishes_ingridients")
+public class IngridientInDish {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "step_id")
-    UUID step_id;
+    @Column(name = "id")
+    private UUID id;
 
-    @Column(name = "number")
-    private Integer number;
-
-    @Column(name="dish_id")
+    @JoinColumn(name = "dish_id")
     private UUID dish_id;
 
-    @Column(name = "title")
-    private String title;
+    @ManyToOne
+    @JoinColumn(name = "ingridient_id")
+    private Ingridient ingridient;
 
-    @Column(name = "image")
-    private String image;
+    @Column(name = "amount")
+    private Integer amount;
 
-    @Column(name = "description")
-    private String description;
+    @Column(name = "unit")
+    private String unit;
 }
