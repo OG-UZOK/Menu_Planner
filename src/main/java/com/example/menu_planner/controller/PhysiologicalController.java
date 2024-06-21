@@ -21,4 +21,9 @@ public class PhysiologicalController {
     public Physiological registerUser(@RequestBody PhysiologicalRequest request, Authentication authentication){
         return service.createPhysiological(request, authentication);
     }
+
+    @GetMapping()
+    public Physiological registerUser(Authentication authentication){
+        return service.getPhysiological(authentication);
+    }
 }

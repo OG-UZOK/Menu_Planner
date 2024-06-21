@@ -7,5 +7,7 @@ import org.springframework.security.core.Authentication;
 
 public interface PhysiologicalService {
     public Physiological createPhysiological(@Valid PhysiologicalRequest request, Authentication authentication);
+
+    public Physiological getPhysiological(Authentication authentication);
 }
 

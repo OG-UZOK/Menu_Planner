@@ -109,6 +109,17 @@ public class PhysiologicalServiceImpl implements PhysiologicalService {
                 request.weight(), daylyActivityString, targetString, bodyMassIndexResult, totalCalories, proteinCaloriesDouble,
                 fatCaloriesDouble, carbCaloriesDouble);
 
+        physiologicalRepository.deleteAllByUser_id(userId);
+
         return physiologicalRepository.save(physiological);
+    }
+
+    @SneakyThrows
+    public Physiological getPhysiological(Authentication authentication){
+        UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
+        Physiological physiological = physiologicalRepository.findByUserId(userId).orElseThrow(() ->
+                new NotFoundException("physiological with this ID does not exist"));
+
+        return physiological;
     }
 }

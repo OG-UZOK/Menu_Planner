@@ -22,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -36,7 +37,6 @@ public class CategoryServiceImpl implements CategoryService {
 
     @SneakyThrows
     public Category createCategory(@Valid CategoryRequest category, Authentication authentication) {
-        System.out.println("123456789");
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
         System.out.println(!Objects.equals(user.getRole(), "ADMIN"));
@@ -51,5 +51,17 @@ public class CategoryServiceImpl implements CategoryService {
         Category newCategory = Category.of(null, category.name());
 
         return categoryRepository.save(newCategory);
+    }
+
+    @SneakyThrows
+    public Category getCategoryById(@Valid UUID category_id,Authentication authentication){
+        Category category = categoryRepository.findById(category_id).orElseThrow(() -> new NotFoundException("Category not found"));
+        return category;
+    }
+
+    @SneakyThrows
+    public List<Category> getCategoryAll(Authentication authentication){
+        List<Category> categoryList = categoryRepository.findAll();
+        return categoryList;
     }
 }

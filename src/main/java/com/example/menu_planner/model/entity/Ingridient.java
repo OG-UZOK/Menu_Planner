@@ -18,6 +18,9 @@ public class Ingridient {
     @Column(name = "id")
     UUID id;
 
+    @Column(name="user_id")
+    private UUID user_id;
+
     @Column(name = "name", columnDefinition = "VARCHAR(255)")
     private String name;
 
