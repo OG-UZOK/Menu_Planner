@@ -27,11 +27,10 @@ public class DishController {
     @PostMapping("create")
     @ResponseBody
     public Dish createDish(@RequestBody DishCreateRequest request, Authentication authentication){
-        System.out.println("request");
         return dishService.createDish(request, authentication);
     }
 
-    @PostMapping("redact")
+    @PutMapping("redact")
     @ResponseBody
     public Dish redactDish(@RequestBody DishCreateRequest request, Authentication authentication,@Valid @NotNull(message="Id cant be empty")
                                                                                 @RequestParam("id") UUID id){
