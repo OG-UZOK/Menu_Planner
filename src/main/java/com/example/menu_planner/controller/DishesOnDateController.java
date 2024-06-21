@@ -44,4 +44,9 @@ public class DishesOnDateController {
             Authentication authentication) {
         return dishesOnDateService.getDishesOnWeek(startDate, endDate, authentication);
     }
+
+//    @GetMapping("/generate")
+//    public CaloriesOnWeekResponse redactPlanOnWeek(@RequestParam("myDishes"), Authentication authentication){
+//        return dishesOnDateService.redactPlanOnWeek(request, authentication);
+//    }
 }
