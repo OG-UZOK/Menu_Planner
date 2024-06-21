@@ -28,11 +28,11 @@ public class Ingridient {
     private Boolean is_liquid;
 
     @Column(name = "protein")
-    private Integer protein;
+    private Double protein;
 
     @Column(name = "fat")
-    private Integer fat;
+    private Double fat;
 
     @Column(name = "carbohydrates")
-    private Integer carbohydrates;
+    private Double carbohydrates;
 }

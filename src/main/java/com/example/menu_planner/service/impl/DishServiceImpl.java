@@ -46,7 +46,6 @@ public class DishServiceImpl implements DishService {
     @SneakyThrows
     public Dish createDish(@Valid DishCreateRequest dish, Authentication authentication) {
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 
         Integer totalProteinDish = 0;
         Integer totalFatDish = 0;
@@ -85,11 +84,11 @@ public class DishServiceImpl implements DishService {
         if (dish.ingredient() != null) {
             for (IngridientInDishRequest ingridientRequest : dish.ingredient()) {
                 Ingridient currentIngridient = ingridientRepository.findById(ingridientRequest.ingridient_id()).orElseThrow(() -> new NotFoundException("Ingridient not found"));
-                totalProteinDish += currentIngridient.getProtein() * ingridientRequest.amount();
-                totalFatDish += currentIngridient.getFat() * ingridientRequest.amount();
-                totalCarbohydrateDish += currentIngridient.getCarbohydrates() * ingridientRequest.amount();
+                totalProteinDish += (int) (currentIngridient.getProtein() * (ingridientRequest.amount() / 100));
+                totalFatDish += (int) (currentIngridient.getFat() * (ingridientRequest.amount() / 100));
+                totalCarbohydrateDish += (int) (currentIngridient.getCarbohydrates() * (ingridientRequest.amount() / 100));
 
-                IngridientInDish ingridientInDish = IngridientInDish.of(null, idDish, currentIngridient, ingridientRequest.amount(), ingridientRequest.unit());
+                IngridientInDish ingridientInDish = IngridientInDish.of(null, idDish, currentIngridient, ingridientRequest.amount(), ingridientRequest.unit(), ingridientRequest.gramm());
                 ingridientInDishList.add(ingridientInDish);
             }
         }
@@ -173,11 +172,11 @@ public class DishServiceImpl implements DishService {
         if (request.ingredient() != null) {
             for (IngridientInDishRequest ingredientRequest : request.ingredient()) {
                 Ingridient currentIngredient = ingridientRepository.findById(ingredientRequest.ingridient_id()).orElseThrow(() -> new NotFoundException("Ingredient not found"));
-                totalProteinDish += currentIngredient.getProtein() * ingredientRequest.amount();
-                totalFatDish += currentIngredient.getFat() * ingredientRequest.amount();
-                totalCarbohydrateDish += currentIngredient.getCarbohydrates() * ingredientRequest.amount();
+                totalProteinDish += (int) (currentIngredient.getProtein() * (ingredientRequest.amount() / 100));
+                totalFatDish += (int) (currentIngredient.getFat() * (ingredientRequest.amount() / 100));
+                totalCarbohydrateDish += (int) (currentIngredient.getCarbohydrates() * (ingredientRequest.amount() / 100));
 
-                IngridientInDish ingredientInDish = IngridientInDish.of(null, oldDish.getId(), currentIngredient, ingredientRequest.amount(), ingredientRequest.unit());
+                IngridientInDish ingredientInDish = IngridientInDish.of(null, oldDish.getId(), currentIngredient, ingredientRequest.amount(), ingredientRequest.unit(), ingredientRequest.gramm());
                 ingredientInDishList.add(ingredientInDish);
             }
         }

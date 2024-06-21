@@ -10,8 +10,11 @@ public record IngridientInDishRequest(
         UUID ingridient_id,
         @NotNull(message = "Amount cannot be null")
         @Positive(message = "Amount must be greater than zero")
-        Integer amount,
+        Double amount,
         @NotBlank(message = "Unit cannot be empty")
-        String unit
+        String unit,
+        @NotNull(message = "gramm cannot be null")
+        @PositiveOrZero(message = "gramm must be greater than or equal to zero")
+        Integer gramm
 ) {
 }

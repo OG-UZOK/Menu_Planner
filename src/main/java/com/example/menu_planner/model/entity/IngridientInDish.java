@@ -26,8 +26,11 @@ public class IngridientInDish {
     private Ingridient ingridient;
 
     @Column(name = "amount")
-    private Integer amount;
+    private Double amount;
 
     @Column(name = "unit")
     private String unit;
+
+    @Column(name="gramm")
+    private Integer gramm;
 }
