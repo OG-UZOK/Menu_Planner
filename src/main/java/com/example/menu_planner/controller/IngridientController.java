@@ -31,7 +31,7 @@ public class IngridientController {
     @ResponseBody
     public Ingridient redactIngridient(@RequestBody IngridientRequest request, Authentication authentication,
                                        @NotNull(message = "Ingridient ID can not be empty")
-                                       @RequestParam(value = "name") UUID ingridient_id){
+                                       @RequestParam(value = "id") UUID ingridient_id){
         return ingridientService.redactIngridient(request, authentication, ingridient_id);
     }
 

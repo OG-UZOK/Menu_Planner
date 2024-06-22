@@ -41,8 +41,7 @@ public class DishServiceImpl implements DishService {
     private final StepRepository stepRepository;
     private final IngridientRepository ingridientRepository;
     private final TypeOfMealRepository typeOfMealRepository;
-    private final IngridientInDishRepository ingridientInDishRepository;
-
+    private final SavedDishesRepository savedDishesRepository;
     @SneakyThrows
     public Dish createDish(@Valid DishCreateRequest dish, Authentication authentication) {
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
@@ -115,6 +114,8 @@ public class DishServiceImpl implements DishService {
         // Сохранение блюда в репозитории
         newDish = dishRepository.save(newDish);
 
+
+        savedDishesRepository.save(SavedDishes.of(null, userId, idDish));
 
         return newDish;
     }
@@ -241,6 +242,8 @@ public class DishServiceImpl implements DishService {
             }
         }
 
+        savedDishesRepository.DeleteAllByDishId(dish_id);
+
         dishRepository.delete(dish);
 
 
@@ -255,7 +258,13 @@ public class DishServiceImpl implements DishService {
 
         List<Step> listSteps = stepRepository.findByDishId(dish.getId());
 
-        DishResponse dishResponse = new DishResponse(dish, listSteps);
+        Boolean savedDish = false;
+
+        if (savedDishesRepository.findAllByDishIdAndUserId(dish_id, userId).isPresent()){
+            savedDish = true;
+        }
+
+        DishResponse dishResponse = new DishResponse(dish, savedDish ,listSteps);
         return dishResponse;
     }
 
