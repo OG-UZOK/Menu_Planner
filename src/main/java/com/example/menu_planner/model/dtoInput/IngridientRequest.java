@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
 public record IngridientRequest(
-        @NotNull(message = "is_liquid cannot be null")
+        @NotBlank(message = "is_liquid cannot be null")
         Boolean is_liquid,
         @NotBlank(message = "name cannot be empty")
         String name,
@@ -17,6 +17,8 @@ public record IngridientRequest(
         Double fat,
         @NotNull(message = "carbohydrates cannot be null")
         @PositiveOrZero(message = "carbohydrates must be greater than or equal to zero")
-        Double carbohydrates
+        Double carbohydrates,
+
+        String image
 ) {
 }

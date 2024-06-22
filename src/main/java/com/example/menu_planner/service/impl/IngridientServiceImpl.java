@@ -15,10 +15,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 @Slf4j
@@ -29,6 +33,8 @@ public class IngridientServiceImpl implements IngridientService {
     private final IngridientRepository ingridientRepository;
     private final JwtTokenUtils tokenUtils;
     private final UserRepository userRepository;
+    private static final String UPLOAD_DIR = "uploadsStep/";
+
 
     @SneakyThrows
     public Ingridient createIngridient(@Valid IngridientRequest ingridient, Authentication authentication){
@@ -36,8 +42,25 @@ public class IngridientServiceImpl implements IngridientService {
         if (ingridientRepository.findByName(ingridient.name()).isPresent()){
             throw new WrongData("This name exists in DB");
         }
-        Ingridient newIngridient = Ingridient.of(null, userId, ingridient.name(), ingridient.is_liquid(), ingridient.protein(), ingridient.fat()
-        , ingridient.carbohydrates());
+
+        String image = null;
+        if (ingridient.image() != null){
+            try {
+                String name = ingridient.image() + ".png";
+                Path filePath = Paths.get(UPLOAD_DIR).resolve(name);
+                Resource resource = new UrlResource(filePath.toUri());
+
+                if (resource.exists() || resource.isReadable()) {
+                    image = ingridient.image();
+                } else {
+                    throw new NotFoundException("Could not find or read file: " + ingridient.name());
+                }
+            } catch (NotFoundException ex){
+                throw new RuntimeException("Could not find or read file: " + ingridient.name());
+            }
+        }
+        Ingridient newIngridient = Ingridient.of(null, userId, ingridient.name(), ingridient.protein(), ingridient.fat()
+        , ingridient.carbohydrates(), image);
 
         return ingridientRepository.save(newIngridient);
     }
@@ -58,8 +81,25 @@ public class IngridientServiceImpl implements IngridientService {
             throw new WrongData("This name exists in DB");
         }
 
-        Ingridient newIngridient = Ingridient.of(null, userId, request.name(), request.is_liquid(), request.protein(), request.fat()
-                , request.carbohydrates());
+        String image = null;
+        if (request.image() != null){
+            try {
+                String name = request.image() + ".png";
+                Path filePath = Paths.get(UPLOAD_DIR).resolve(name);
+                Resource resource = new UrlResource(filePath.toUri());
+
+                if (resource.exists() || resource.isReadable()) {
+                    image = request.image();
+                } else {
+                    throw new NotFoundException("Could not find or read file: " + request.name());
+                }
+            } catch (NotFoundException ex){
+                throw new RuntimeException("Could not find or read file: " + request.name());
+            }
+        }
+
+        Ingridient newIngridient = Ingridient.of(null, userId, request.name(), request.protein(), request.fat()
+                , request.carbohydrates(), image);
 
         return ingridientRepository.save(newIngridient);
     }

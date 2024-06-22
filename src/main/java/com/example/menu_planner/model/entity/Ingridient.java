@@ -24,9 +24,6 @@ public class Ingridient {
     @Column(name = "name", columnDefinition = "VARCHAR(255)")
     private String name;
 
-    @Column(name = "is_liquid")
-    private Boolean is_liquid;
-
     @Column(name = "protein")
     private Double protein;
 
@@ -35,4 +32,7 @@ public class Ingridient {
 
     @Column(name = "carbohydrates")
     private Double carbohydrates;
+
+    @Column(name = "image")
+    private String image;
 }
