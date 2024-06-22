@@ -9,6 +9,8 @@ import com.example.menu_planner.repository.DishRepository;
 import com.example.menu_planner.service.DishService;
 import com.example.menu_planner.service.SavedDishesService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -94,5 +96,10 @@ public class DishController {
                 minProteins, maxProteins, minFats, maxFats,
                 minCalories, maxCalories, minCarbohydrates, maxCarbohydrates,
                 sortField, sortOrder, cookingTime,includeIngredientIds, excludeIngredientIds, types );
+    }
+
+    @PostMapping("/findByIngredients")
+    public List<Dish> findDishesByIngredients(@Valid @NotEmpty(message = "Ids cannot be empty") @RequestBody List<UUID> ingredientIds, Authentication authentication) {
+        return dishService.findDishesByIngredients(ingredientIds, authentication);
     }
 }

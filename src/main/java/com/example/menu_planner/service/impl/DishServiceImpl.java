@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Validated
@@ -306,5 +307,28 @@ public class DishServiceImpl implements DishService {
 
         return dishRepository.findAll(spec, sort);
 
+    }
+
+    @Override
+    public List<Dish> findDishesByIngredients(List<UUID> ingredientIds, Authentication authentication) {
+        // Получение всех блюд
+        List<Dish> allDishes = dishRepository.findAll();
+
+        // Подсчет соответствия ингредиентов для каждого блюда
+        Map<Dish, Long> dishMatchCount = new HashMap<>();
+        for (Dish dish : allDishes) {
+            long matchCount = dish.getIngridients().stream()
+                    .filter(ingridientInDish -> ingredientIds.contains(ingridientInDish.getIngridient().getId()))
+                    .count();
+            dishMatchCount.put(dish, matchCount);
+        }
+
+        // Сортировка блюд по количеству соответствующих ингредиентов (от максимального к минимальному)
+        List<Dish> sortedDishes = dishMatchCount.entrySet().stream()
+                .sorted(Map.Entry.<Dish, Long>comparingByValue().reversed())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        return sortedDishes;
     }
 }
