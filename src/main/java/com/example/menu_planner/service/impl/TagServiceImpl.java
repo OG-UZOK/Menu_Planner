@@ -1,17 +1,25 @@
 package com.example.menu_planner.service.impl;
 
+import com.example.menu_planner.exception.ForbiddenException;
+import com.example.menu_planner.exception.NotFoundException;
 import com.example.menu_planner.exception.WrongData;
 import com.example.menu_planner.model.dtoInput.TagRequest;
+import com.example.menu_planner.model.entity.Category;
 import com.example.menu_planner.model.entity.Ingridient;
 import com.example.menu_planner.model.entity.Tag;
+import com.example.menu_planner.model.util.JwtTokenUtils;
 import com.example.menu_planner.repository.TagRepository;
 import com.example.menu_planner.service.TagService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+
+import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Validated
@@ -19,6 +27,7 @@ import org.springframework.validation.annotation.Validated;
 @RequiredArgsConstructor
 public class TagServiceImpl implements TagService {
     private final TagRepository tagRepository;
+    private final JwtTokenUtils tokenUtils;
 
     public Tag createTag(@Valid TagRequest tag, Authentication authentication) {
         if (tagRepository.findByName(tag.name()).isPresent()){
@@ -27,4 +36,17 @@ public class TagServiceImpl implements TagService {
         Tag newTag = Tag.of(null, tag.name());
         return tagRepository.save(newTag);
     }
+
+    @SneakyThrows
+    public Tag getTagById(@Valid UUID tag_id, Authentication authentication){
+        Tag tag = tagRepository.findById(tag_id).orElseThrow(() -> new NotFoundException("Tag not found"));
+        return tag;
+    }
+
+    @SneakyThrows
+    public List<Tag> getTagAll(Authentication authentication){
+        List<Tag> tagList = tagRepository.findAll();
+        return tagList;
+    }
+
 }

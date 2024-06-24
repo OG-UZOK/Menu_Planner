@@ -7,7 +7,10 @@ import com.example.menu_planner.model.dtoOutput.JwtResponse;
 import com.example.menu_planner.model.entity.Dish;
 import com.example.menu_planner.repository.DishRepository;
 import com.example.menu_planner.service.DishService;
+import com.example.menu_planner.service.SavedDishesService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,15 +26,34 @@ import java.util.UUID;
 @RequestMapping("/dish")
 public class DishController {
     private final DishService dishService;
+    private final SavedDishesService savedDishesService;
 
     @PostMapping("create")
     @ResponseBody
     public Dish createDish(@RequestBody DishCreateRequest request, Authentication authentication){
-        System.out.println("request");
         return dishService.createDish(request, authentication);
     }
 
-    @PostMapping("redact")
+    @PostMapping("savedList/save")
+    @ResponseBody
+    public String saveDishInList(@RequestParam @NotNull(message = "dish_id can not be null") UUID dish_id, Authentication authentication) {
+        return savedDishesService.saveDishInList(dish_id, authentication);
+    }
+
+    @DeleteMapping("savedList/delete")
+    @ResponseBody
+    public String deleteDishInList(@RequestParam @NotNull(message = "dish_id can not be null") UUID dish_id, Authentication authentication) {
+        return savedDishesService.deleteDishInList(dish_id, authentication);
+    }
+
+    @GetMapping("savedList")
+    @ResponseBody
+    public List<Dish> getDishesInList(Authentication authentication) {
+        return savedDishesService.getDishesInList(authentication);
+    }
+
+
+    @PutMapping("redact")
     @ResponseBody
     public Dish redactDish(@RequestBody DishCreateRequest request, Authentication authentication,@Valid @NotNull(message="Id cant be empty")
                                                                                 @RequestParam("id") UUID id){
@@ -51,7 +73,7 @@ public class DishController {
     }
 
     @GetMapping("all")
-    public List<Dish> getDishById(Authentication authentication,
+    public List<Dish> getDishAll(Authentication authentication,
                                   @RequestParam(value = "name", required = false) String name,
                                   @RequestParam(value = "myDishes", required = false) Boolean myDishes,
                                   @RequestParam(value = "tags", required = false) List<UUID> tags,
@@ -74,5 +96,10 @@ public class DishController {
                 minProteins, maxProteins, minFats, maxFats,
                 minCalories, maxCalories, minCarbohydrates, maxCarbohydrates,
                 sortField, sortOrder, cookingTime,includeIngredientIds, excludeIngredientIds, types );
+    }
+
+    @PostMapping("/findByIngredients")
+    public List<Dish> findDishesByIngredients(@Valid @NotEmpty(message = "Ids cannot be empty") @RequestBody List<UUID> ingredientIds, Authentication authentication) {
+        return dishService.findDishesByIngredients(ingredientIds, authentication);
     }
 }

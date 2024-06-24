@@ -72,5 +72,8 @@ public class Dish {
     @Column(name="carbohydrates")
     private Integer carbohydrates;
 
+    @Column(name = "image")
+    private String image;
+
 
 }

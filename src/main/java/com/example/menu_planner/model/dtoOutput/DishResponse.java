@@ -16,6 +16,9 @@ import java.util.UUID;
 public record DishResponse(
         @NotBlank(message = "Name cannot be empty")
         Dish dish,
+
+        @NotBlank(message = "Save dish cannot be empty")
+        Boolean savedDish,
         @NotEmpty(message = "Steps cannot be empty")
         @Valid List<Step> steps
 ) {

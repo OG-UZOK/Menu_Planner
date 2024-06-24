@@ -15,6 +15,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
@@ -26,6 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Validated
@@ -41,12 +44,10 @@ public class DishServiceImpl implements DishService {
     private final StepRepository stepRepository;
     private final IngridientRepository ingridientRepository;
     private final TypeOfMealRepository typeOfMealRepository;
-    private final IngridientInDishRepository ingridientInDishRepository;
-
+    private final SavedDishesRepository savedDishesRepository;
     @SneakyThrows
     public Dish createDish(@Valid DishCreateRequest dish, Authentication authentication) {
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 
         Integer totalProteinDish = 0;
         Integer totalFatDish = 0;
@@ -85,11 +86,11 @@ public class DishServiceImpl implements DishService {
         if (dish.ingredient() != null) {
             for (IngridientInDishRequest ingridientRequest : dish.ingredient()) {
                 Ingridient currentIngridient = ingridientRepository.findById(ingridientRequest.ingridient_id()).orElseThrow(() -> new NotFoundException("Ingridient not found"));
-                totalProteinDish += currentIngridient.getProtein() * ingridientRequest.amount();
-                totalFatDish += currentIngridient.getFat() * ingridientRequest.amount();
-                totalCarbohydrateDish += currentIngridient.getCarbohydrates() * ingridientRequest.amount();
+                totalProteinDish += (int) (currentIngridient.getProtein() * (ingridientRequest.amount() / 100));
+                totalFatDish += (int) (currentIngridient.getFat() * (ingridientRequest.amount() / 100));
+                totalCarbohydrateDish += (int) (currentIngridient.getCarbohydrates() * (ingridientRequest.amount() / 100));
 
-                IngridientInDish ingridientInDish = IngridientInDish.of(null, idDish, currentIngridient, ingridientRequest.amount(), ingridientRequest.unit());
+                IngridientInDish ingridientInDish = IngridientInDish.of(null, idDish, currentIngridient, ingridientRequest.amount(), ingridientRequest.unit(), ingridientRequest.gramm());
                 ingridientInDishList.add(ingridientInDish);
             }
         }
@@ -110,12 +111,30 @@ public class DishServiceImpl implements DishService {
             }
         }
 
+        String image = null;
+
+        try {
+            String name = dish.image() + ".png";
+            Path filePath = Paths.get(UPLOAD_DIR).resolve(name);
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (resource.exists() || resource.isReadable()) {
+                image = dish.image();
+            } else {
+                throw new NotFoundException("Could not find or read file: " + dish.name());
+            }
+        } catch (NotFoundException ex){
+            throw new RuntimeException("Could not find or read file: " + dish.name());
+        }
+
         Dish newDish = Dish.of(idDish, dish.name(), currentDate,dish.amountPortion(), dish.cookingTime(), userId, categories, tags, types, ingridientInDishList,
-                totalCaloriesDish, totalProteinDish, totalFatDish, totalCarbohydrateDish);
+                totalCaloriesDish, totalProteinDish, totalFatDish, totalCarbohydrateDish, image);
 
         // Сохранение блюда в репозитории
         newDish = dishRepository.save(newDish);
 
+
+        savedDishesRepository.save(SavedDishes.of(null, userId, idDish));
 
         return newDish;
     }
@@ -173,11 +192,11 @@ public class DishServiceImpl implements DishService {
         if (request.ingredient() != null) {
             for (IngridientInDishRequest ingredientRequest : request.ingredient()) {
                 Ingridient currentIngredient = ingridientRepository.findById(ingredientRequest.ingridient_id()).orElseThrow(() -> new NotFoundException("Ingredient not found"));
-                totalProteinDish += currentIngredient.getProtein() * ingredientRequest.amount();
-                totalFatDish += currentIngredient.getFat() * ingredientRequest.amount();
-                totalCarbohydrateDish += currentIngredient.getCarbohydrates() * ingredientRequest.amount();
+                totalProteinDish += (int) (currentIngredient.getProtein() * (ingredientRequest.amount() / 100));
+                totalFatDish += (int) (currentIngredient.getFat() * (ingredientRequest.amount() / 100));
+                totalCarbohydrateDish += (int) (currentIngredient.getCarbohydrates() * (ingredientRequest.amount() / 100));
 
-                IngridientInDish ingredientInDish = IngridientInDish.of(null, oldDish.getId(), currentIngredient, ingredientRequest.amount(), ingredientRequest.unit());
+                IngridientInDish ingredientInDish = IngridientInDish.of(null, oldDish.getId(), currentIngredient, ingredientRequest.amount(), ingredientRequest.unit(), ingredientRequest.gramm());
                 ingredientInDishList.add(ingredientInDish);
             }
         }
@@ -205,6 +224,22 @@ public class DishServiceImpl implements DishService {
             }
         }
 
+        String image = null;
+
+        try {
+            String name = request.image() + ".png";
+            Path filePath = Paths.get(UPLOAD_DIR).resolve(name);
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (resource.exists() || resource.isReadable()) {
+                image = request.image();
+            } else {
+                throw new NotFoundException("Could not find or read file: " + request.name());
+            }
+        } catch (NotFoundException ex){
+            throw new RuntimeException("Could not find or read file: " + request.name());
+        }
+
         oldDish.getIngridients().clear();
         oldDish.getIngridients().addAll(ingredientInDishList);
 
@@ -219,6 +254,7 @@ public class DishServiceImpl implements DishService {
         oldDish.setProteins(totalProteinDish);
         oldDish.setFats(totalFatDish);
         oldDish.setCarbohydrates(totalCarbohydrateDish);
+        oldDish.setImage(image);
 
         return dishRepository.save(oldDish);
     }
@@ -242,6 +278,8 @@ public class DishServiceImpl implements DishService {
             }
         }
 
+        savedDishesRepository.DeleteAllByDishId(dish_id);
+
         dishRepository.delete(dish);
 
 
@@ -256,7 +294,13 @@ public class DishServiceImpl implements DishService {
 
         List<Step> listSteps = stepRepository.findByDishId(dish.getId());
 
-        DishResponse dishResponse = new DishResponse(dish, listSteps);
+        Boolean savedDish = false;
+
+        if (savedDishesRepository.findAllByDishIdAndUserId(dish_id, userId).isPresent()){
+            savedDish = true;
+        }
+
+        DishResponse dishResponse = new DishResponse(dish, savedDish ,listSteps);
         return dishResponse;
     }
 
@@ -298,5 +342,28 @@ public class DishServiceImpl implements DishService {
 
         return dishRepository.findAll(spec, sort);
 
+    }
+
+    @Override
+    public List<Dish> findDishesByIngredients(List<UUID> ingredientIds, Authentication authentication) {
+        // Получение всех блюд
+        List<Dish> allDishes = dishRepository.findAll();
+
+        // Подсчет соответствия ингредиентов для каждого блюда
+        Map<Dish, Long> dishMatchCount = new HashMap<>();
+        for (Dish dish : allDishes) {
+            long matchCount = dish.getIngridients().stream()
+                    .filter(ingridientInDish -> ingredientIds.contains(ingridientInDish.getIngridient().getId()))
+                    .count();
+            dishMatchCount.put(dish, matchCount);
+        }
+
+        // Сортировка блюд по количеству соответствующих ингредиентов (от максимального к минимальному)
+        List<Dish> sortedDishes = dishMatchCount.entrySet().stream()
+                .sorted(Map.Entry.<Dish, Long>comparingByValue().reversed())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        return sortedDishes;
     }
 }

@@ -18,18 +18,21 @@ public class Ingridient {
     @Column(name = "id")
     UUID id;
 
+    @Column(name="user_id")
+    private UUID user_id;
+
     @Column(name = "name", columnDefinition = "VARCHAR(255)")
     private String name;
 
-    @Column(name = "is_liquid")
-    private Boolean is_liquid;
-
     @Column(name = "protein")
-    private Integer protein;
+    private Double protein;
 
     @Column(name = "fat")
-    private Integer fat;
+    private Double fat;
 
     @Column(name = "carbohydrates")
-    private Integer carbohydrates;
+    private Double carbohydrates;
+
+    @Column(name = "image")
+    private String image;
 }
