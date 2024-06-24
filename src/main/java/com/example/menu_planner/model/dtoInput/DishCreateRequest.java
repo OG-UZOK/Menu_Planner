@@ -31,6 +31,10 @@ public record DishCreateRequest(
         @Valid List<IngridientInDishRequest> ingredient,
 
         @NotEmpty(message = "Steps cannot be empty")
-        @Valid List<StepRequest> steps
+        @Valid List<StepRequest> steps,
+
+        @NotBlank(message = "image cannot be empty")
+        @Size(max = 255, message = "image cannot be longer than 255 characters")
+        String image
 ) {
 }

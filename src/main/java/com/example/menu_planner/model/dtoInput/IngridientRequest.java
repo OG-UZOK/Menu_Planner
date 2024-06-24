@@ -5,8 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
 public record IngridientRequest(
-        @NotBlank(message = "is_liquid cannot be null")
-        Boolean is_liquid,
         @NotBlank(message = "name cannot be empty")
         String name,
         @NotNull(message = "protein cannot be null")
