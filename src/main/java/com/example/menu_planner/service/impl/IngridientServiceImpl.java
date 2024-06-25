@@ -11,16 +11,19 @@ import com.example.menu_planner.model.util.JwtTokenUtils;
 import com.example.menu_planner.repository.IngridientRepository;
 import com.example.menu_planner.repository.UserRepository;
 import com.example.menu_planner.service.IngridientService;
+import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -34,7 +37,28 @@ public class IngridientServiceImpl implements IngridientService {
     private final IngridientRepository ingridientRepository;
     private final JwtTokenUtils tokenUtils;
     private final UserRepository userRepository;
-    private static final String UPLOAD_DIR = "uploads/";
+    @Value("${external.folder.relative.path}")
+    private String externalFolderRelativePath;
+
+    private Path externalFolderPath;
+
+    @PostConstruct
+    public void init() {
+        // Получаем путь к текущей директории
+        Path currentRelativePath = Paths.get("").toAbsolutePath();
+        log.info("Current absolute path is: " + currentRelativePath.toString());
+
+        // Преобразуем относительный путь в абсолютный
+        externalFolderPath = currentRelativePath.resolve(externalFolderRelativePath).normalize();
+        log.info("External folder path is: " + externalFolderPath.toString());
+
+        // Создаем директорию, если она не существует
+        try {
+            Files.createDirectories(externalFolderPath);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not create external folder path", e);
+        }
+    }
 
 
     @SneakyThrows
@@ -48,7 +72,7 @@ public class IngridientServiceImpl implements IngridientService {
         if (ingridient.image() != null){
             try {
                 String name = ingridient.image() + ".png";
-                Path filePath = Paths.get(UPLOAD_DIR).resolve(name);
+                Path filePath = externalFolderPath.resolve(name);
                 Resource resource = new UrlResource(filePath.toUri());
 
                 if (resource.exists() || resource.isReadable()) {
@@ -86,7 +110,8 @@ public class IngridientServiceImpl implements IngridientService {
         if (request.image() != null){
             try {
                 String name = request.image() + ".png";
-                Path filePath = Paths.get(UPLOAD_DIR).resolve(name);
+                Path filePath = externalFolderPath.resolve(name);
+
                 Resource resource = new UrlResource(filePath.toUri());
 
                 if (resource.exists() || resource.isReadable()) {

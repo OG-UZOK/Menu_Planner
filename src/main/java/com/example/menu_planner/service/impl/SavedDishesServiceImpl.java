@@ -24,15 +24,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SavedDishesServiceImpl implements SavedDishesService {
 
-    private static final String UPLOAD_DIR = "uploads/";
     private final DishRepository dishRepository;
-    private final TagRepository tagRepository;
-    private final CategoryRepository categoryRepository;
-    private final UserRepository userRepository;
     private final JwtTokenUtils tokenUtils;
-    private final StepRepository stepRepository;
-    private final IngridientRepository ingridientRepository;
-    private final TypeOfMealRepository typeOfMealRepository;
     private final SavedDishesRepository savedDishesRepository;
 
     @SneakyThrows

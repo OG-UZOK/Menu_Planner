@@ -3,10 +3,12 @@ package com.example.menu_planner.service.impl;
 import com.example.menu_planner.exception.NotFoundException;
 import com.example.menu_planner.repository.StepRepository;
 import com.example.menu_planner.service.ImageService;
+import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.security.core.Authentication;
@@ -24,13 +26,35 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class ImageServiceImpl implements ImageService {
-    private static final String UPLOAD_DIR = "uploads/";
+
+    @Value("${external.folder.relative.path}")
+    private String externalFolderRelativePath;
+
+    private Path externalFolderPath;
+
+    @PostConstruct
+    public void init() {
+        // Получаем путь к текущей директории
+        Path currentRelativePath = Paths.get("").toAbsolutePath();
+        log.info("Current absolute path is: " + currentRelativePath.toString());
+
+        // Преобразуем относительный путь в абсолютный
+        externalFolderPath = currentRelativePath.resolve(externalFolderRelativePath).normalize();
+        log.info("External folder path is: " + externalFolderPath.toString());
+
+        // Создаем директорию, если она не существует
+        try {
+            Files.createDirectories(externalFolderPath);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not create external folder path", e);
+        }
+    }
 
     @SneakyThrows
     public String upload(@Valid MultipartFile image, Authentication authentication) {
         UUID idImage = UUID.randomUUID();
         String fileName = idImage.toString() + ".png";
-        Path path = Paths.get(UPLOAD_DIR + fileName);
+        Path path = externalFolderPath.resolve(fileName);
 
         log.info("Current working directory: " + System.getProperty("user.dir"));
         Files.createDirectories(path.getParent());
@@ -42,7 +66,7 @@ public class ImageServiceImpl implements ImageService {
     public Resource download(@Valid String imageName, Authentication authentication){
         try {
             String name = imageName + ".png";
-            Path filePath = Paths.get(UPLOAD_DIR).resolve(name);
+            Path filePath = externalFolderPath.resolve(name);
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists() || resource.isReadable()) {

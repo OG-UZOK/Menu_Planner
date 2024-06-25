@@ -27,7 +27,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TagServiceImpl implements TagService {
     private final TagRepository tagRepository;
-    private final JwtTokenUtils tokenUtils;
 
     public Tag createTag(@Valid TagRequest tag, Authentication authentication) {
         if (tagRepository.findByName(tag.name()).isPresent()){
