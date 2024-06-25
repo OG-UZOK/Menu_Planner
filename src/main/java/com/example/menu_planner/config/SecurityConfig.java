@@ -21,7 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-public class SecurityConfig {
+public class SecurityConfig{
     private final JwtRequestFilter jwtRequestFilter;
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -41,6 +41,7 @@ public class SecurityConfig {
                         .requestMatchers("/ingridient/all").authenticated()
                         .requestMatchers("/category/create").authenticated()
                         .requestMatchers("/tag/create").authenticated()
+                        .requestMatchers("/tag/all").authenticated()
                         .requestMatchers("/dish/all").authenticated()
                         .requestMatchers("/dish").authenticated()
                         .requestMatchers("/dish/create").authenticated()
