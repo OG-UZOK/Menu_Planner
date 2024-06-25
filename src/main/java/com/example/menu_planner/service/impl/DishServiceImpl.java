@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class DishServiceImpl implements DishService {
-    private static final String UPLOAD_DIR = "uploadsStep/";
+    private static final String UPLOAD_DIR = "uploads/";
     private final DishRepository dishRepository;
     private final TagRepository tagRepository;
     private final CategoryRepository categoryRepository;

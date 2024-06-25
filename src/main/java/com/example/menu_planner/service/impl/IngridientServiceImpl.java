@@ -34,7 +34,7 @@ public class IngridientServiceImpl implements IngridientService {
     private final IngridientRepository ingridientRepository;
     private final JwtTokenUtils tokenUtils;
     private final UserRepository userRepository;
-    private static final String UPLOAD_DIR = "uploadsStep/";
+    private static final String UPLOAD_DIR = "uploads/";
 
 
     @SneakyThrows

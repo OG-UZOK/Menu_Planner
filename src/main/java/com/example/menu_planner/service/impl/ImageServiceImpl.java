@@ -2,12 +2,11 @@ package com.example.menu_planner.service.impl;
 
 import com.example.menu_planner.exception.NotFoundException;
 import com.example.menu_planner.repository.StepRepository;
-import com.example.menu_planner.service.StepService;
+import com.example.menu_planner.service.ImageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.ast.Not;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.security.core.Authentication;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,9 +23,8 @@ import java.util.UUID;
 @Validated
 @Service
 @RequiredArgsConstructor
-public class StepServiceImpl implements StepService {
-    private final StepRepository stepRepository;
-    private static final String UPLOAD_DIR = "uploadsStep/";
+public class ImageServiceImpl implements ImageService {
+    private static final String UPLOAD_DIR = "uploads/";
 
     @SneakyThrows
     public String upload(@Valid MultipartFile image, Authentication authentication) {

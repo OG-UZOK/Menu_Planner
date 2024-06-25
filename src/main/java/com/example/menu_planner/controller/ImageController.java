@@ -1,9 +1,6 @@
 package com.example.menu_planner.controller;
 
-import com.example.menu_planner.model.dtoInput.TagRequest;
-import com.example.menu_planner.model.entity.Tag;
-import com.example.menu_planner.service.StepService;
-import com.example.menu_planner.service.TagService;
+import com.example.menu_planner.service.ImageService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,21 +13,19 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.UUID;
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/step")
-public class StepController {
-    private final StepService service;
-    @PostMapping("/image/upload")
+@RequestMapping("/image")
+public class ImageController {
+    private final ImageService service;
+    @PostMapping("/upload")
     @ResponseBody
     public String upload(@Valid @NotNull @RequestParam("image") MultipartFile image, Authentication authentication){
         return service.upload(image, authentication);
     }
 
-    @GetMapping("/image/download/{name}")
+    @GetMapping("/download/{name}")
     @ResponseBody
     public ResponseEntity<Resource> upload(@Valid @NotBlank(message = "Image ID cannot be null")
                                                @PathVariable("name") String imageName, Authentication authentication){
