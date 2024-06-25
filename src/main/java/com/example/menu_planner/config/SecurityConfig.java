@@ -38,6 +38,7 @@ public class SecurityConfig {
                         .requestMatchers("/ingridient/create").authenticated()
                         .requestMatchers("/ingridient/redact").authenticated()
                         .requestMatchers("/ingridient/delete").authenticated()
+                        .requestMatchers("/ingridient/all").authenticated()
                         .requestMatchers("/category/create").authenticated()
                         .requestMatchers("/tag/create").authenticated()
                         .requestMatchers("/dish/all").authenticated()

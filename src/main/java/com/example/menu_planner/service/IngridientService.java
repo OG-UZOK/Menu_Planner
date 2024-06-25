@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface IngridientService {
@@ -17,4 +18,8 @@ public interface IngridientService {
                                        @Valid UUID ingridient_id);
 
     public String deleteIngridient(@Valid UUID ingridient_id, Authentication authentication);
+
+    public List<Ingridient> getingridients(Authentication authentication);
+
 }
+

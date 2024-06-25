@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -40,5 +41,10 @@ public class IngridientController {
                                        @NotNull(message = "Ingridient ID can not be empty")
                                        @RequestParam(value = "name") UUID ingridient_id){
         return ingridientService.deleteIngridient(ingridient_id, authentication);
+    }
+
+    @GetMapping("all")
+    public List<Ingridient> getIngridients(Authentication authentication){
+        return ingridientService.getingridients(authentication);
     }
 }

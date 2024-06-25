@@ -23,6 +23,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -117,5 +118,13 @@ public class IngridientServiceImpl implements IngridientService {
 
         ingridientRepository.deleteById(ingridient_id);
         return "success";
+    }
+
+    @SneakyThrows
+    public List<Ingridient> getingridients(Authentication authentication){
+
+        List<Ingridient> listIngridients = ingridientRepository.findAll();
+
+        return listIngridients;
     }
 }
