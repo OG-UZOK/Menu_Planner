@@ -21,17 +21,25 @@ public class ImageController {
     private final ImageService service;
     @PostMapping("/upload")
     @ResponseBody
-    public String upload(@Valid @NotNull @RequestParam("image") MultipartFile image, Authentication authentication){
-        return service.upload(image, authentication);
+    public String upload(@Valid @NotNull @RequestParam("image") MultipartFile image, Authentication authentication, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token =  authorizationHeader.substring(7);
+            return service.upload(image, authentication, token);
+        }
+        throw new IllegalArgumentException("Invalid Authorization header");
     }
 
     @GetMapping("/download/{name}")
     @ResponseBody
     public ResponseEntity<Resource> upload(@Valid @NotBlank(message = "Image ID cannot be null")
-                                               @PathVariable("name") String imageName, Authentication authentication){
-         Resource resource = service.download(imageName, authentication);
-         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
+                                               @PathVariable("name") String imageName, Authentication authentication,  @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token =  authorizationHeader.substring(7);
+            Resource resource = service.download(imageName, authentication, token);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                    .body(resource);
+        }
+        throw new IllegalArgumentException("Invalid Authorization header");
     }
 }

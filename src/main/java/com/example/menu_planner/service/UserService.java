@@ -12,7 +12,9 @@ import org.springframework.security.core.Authentication;
 public interface UserService {
     JwtResponse loginUser(@Valid UserLogin userLogin);
     JwtResponse registrationUser(@Valid UserRegistration userRegistration);
-    UserProfileResponse getProfile(Authentication authentication);
-    UserProfileResponse redactProfile(@Valid  UserProfileResponse userProfileResponse, Authentication authentication);
-    Password changePassword(@Valid Password password, Authentication authentication);
+    UserProfileResponse getProfile(Authentication authentication, String token);
+    UserProfileResponse redactProfile(@Valid  UserProfileResponse userProfileResponse, Authentication authentication, String token);
+    Password changePassword(@Valid Password password, Authentication authentication, String token);
+
+    String logout(Authentication authentication,  String token);
 }

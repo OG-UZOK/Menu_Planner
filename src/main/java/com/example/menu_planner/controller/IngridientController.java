@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,27 +25,43 @@ public class IngridientController {
     private final IngridientService ingridientService;
     @PostMapping("create")
     @ResponseBody
-    public Ingridient createIngridient(@RequestBody IngridientRequest request, Authentication authentication){
-        return ingridientService.createIngridient(request, authentication);
+    public Ingridient createIngridient(@RequestBody IngridientRequest request, Authentication authentication, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token =  authorizationHeader.substring(7);
+            return ingridientService.createIngridient(request, authentication, token);
+        }
+        throw new IllegalArgumentException("Invalid Authorization header");
     }
 
     @PutMapping("redact")
     @ResponseBody
     public Ingridient redactIngridient(@RequestBody IngridientRequest request, Authentication authentication,
                                        @NotNull(message = "Ingridient ID can not be empty")
-                                       @RequestParam(value = "id") UUID ingridient_id){
-        return ingridientService.redactIngridient(request, authentication, ingridient_id);
+                                       @RequestParam(value = "id") UUID ingridient_id, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token =  authorizationHeader.substring(7);
+            return ingridientService.redactIngridient(request, authentication, ingridient_id, token);
+        }
+        throw new IllegalArgumentException("Invalid Authorization header");
     }
 
     @DeleteMapping("delete")
     public String deleteIngridients(Authentication authentication,
                                        @NotNull(message = "Ingridient ID can not be empty")
-                                       @RequestParam(value = "name") UUID ingridient_id){
-        return ingridientService.deleteIngridient(ingridient_id, authentication);
+                                       @RequestParam(value = "name") UUID ingridient_id, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token =  authorizationHeader.substring(7);
+            return ingridientService.deleteIngridient(ingridient_id, authentication, token);
+        }
+        throw new IllegalArgumentException("Invalid Authorization header");
     }
 
     @GetMapping("all")
-    public List<Ingridient> getIngridients(Authentication authentication){
-        return ingridientService.getingridients(authentication);
+    public List<Ingridient> getIngridients(Authentication authentication, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token =  authorizationHeader.substring(7);
+            return ingridientService.getingridients(authentication, token);
+        }
+        throw new IllegalArgumentException("Invalid Authorization header");
     }
 }

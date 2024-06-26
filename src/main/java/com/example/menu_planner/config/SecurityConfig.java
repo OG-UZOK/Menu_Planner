@@ -52,6 +52,7 @@ public class SecurityConfig{
                         .requestMatchers("/dishesOnDate/redact").authenticated()
                         .requestMatchers("/step/image/upload").authenticated()
                         .requestMatchers("/step/image/download/").authenticated()
+                        .requestMatchers("/user/logout").authenticated()
                         .requestMatchers("/user/password").authenticated()
                         .requestMatchers("/physiological/create").authenticated()
                         .requestMatchers("/physiological").authenticated()

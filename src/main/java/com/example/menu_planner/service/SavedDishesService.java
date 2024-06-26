@@ -9,11 +9,11 @@ import java.util.UUID;
 
 public interface SavedDishesService {
 
-    public String saveDishInList(@Valid UUID dish_id, Authentication authentication);
+    public String saveDishInList(@Valid UUID dish_id, Authentication authentication, String token);
 
-    public String deleteDishInList(@Valid UUID dish_id, Authentication authentication);
+    public String deleteDishInList(@Valid UUID dish_id, Authentication authentication, String token);
 
-    public List<Dish> getDishesInList(Authentication authentication);
+    public List<Dish> getDishesInList(Authentication authentication, String token);
 
 
 

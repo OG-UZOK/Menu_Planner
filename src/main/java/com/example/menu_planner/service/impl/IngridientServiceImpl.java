@@ -2,12 +2,14 @@ package com.example.menu_planner.service.impl;
 
 import com.example.menu_planner.exception.ForbiddenException;
 import com.example.menu_planner.exception.NotFoundException;
+import com.example.menu_planner.exception.UnauthorizedException;
 import com.example.menu_planner.exception.WrongData;
 import com.example.menu_planner.model.dtoInput.IngridientRequest;
 import com.example.menu_planner.model.entity.Dish;
 import com.example.menu_planner.model.entity.Ingridient;
 import com.example.menu_planner.model.entity.User;
 import com.example.menu_planner.model.util.JwtTokenUtils;
+import com.example.menu_planner.repository.DeletedTokensRepository;
 import com.example.menu_planner.repository.IngridientRepository;
 import com.example.menu_planner.repository.UserRepository;
 import com.example.menu_planner.service.IngridientService;
@@ -39,6 +41,8 @@ public class IngridientServiceImpl implements IngridientService {
     private final UserRepository userRepository;
     @Value("${external.folder.relative.path}")
     private String externalFolderRelativePath;
+    private final DeletedTokensRepository deletedTokensRepository;
+
 
     private Path externalFolderPath;
 
@@ -62,12 +66,14 @@ public class IngridientServiceImpl implements IngridientService {
 
 
     @SneakyThrows
-    public Ingridient createIngridient(@Valid IngridientRequest ingridient, Authentication authentication){
+    public Ingridient createIngridient(@Valid IngridientRequest ingridient, Authentication authentication, String token){
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
         if (ingridientRepository.findByName(ingridient.name()).isPresent()){
             throw new WrongData("This name exists in DB");
         }
-
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         String image = null;
         if (ingridient.image() != null){
             try {
@@ -92,10 +98,12 @@ public class IngridientServiceImpl implements IngridientService {
 
     @SneakyThrows
     public Ingridient redactIngridient(@Valid IngridientRequest request, Authentication authentication,
-                                       @Valid UUID ingridient_id){
+                                       @Valid UUID ingridient_id, String token){
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
-
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         Ingridient ingridient = ingridientRepository.findById(ingridient_id).orElseThrow(() -> new NotFoundException("Ingridient with the id not found"));
 
         if (!ingridient.getUser_id().equals(userId) && !user.getRole().equals("ADMIN")) {
@@ -131,10 +139,12 @@ public class IngridientServiceImpl implements IngridientService {
     }
 
     @SneakyThrows
-    public String deleteIngridient(@Valid UUID ingridient_id, Authentication authentication){
+    public String deleteIngridient(@Valid UUID ingridient_id, Authentication authentication, String token){
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
-
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         Ingridient ingridient = ingridientRepository.findById(ingridient_id).orElseThrow(() -> new NotFoundException("Ingridient with the id not found"));
 
         if (!ingridient.getUser_id().equals(userId) && !user.getRole().equals("ADMIN")) {
@@ -146,8 +156,10 @@ public class IngridientServiceImpl implements IngridientService {
     }
 
     @SneakyThrows
-    public List<Ingridient> getingridients(Authentication authentication){
-
+    public List<Ingridient> getingridients(Authentication authentication, String token){
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         List<Ingridient> listIngridients = ingridientRepository.findAll();
 
         return listIngridients;

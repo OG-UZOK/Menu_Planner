@@ -2,6 +2,7 @@ package com.example.menu_planner.service.impl;
 
 import com.example.menu_planner.exception.ForbiddenException;
 import com.example.menu_planner.exception.NotFoundException;
+import com.example.menu_planner.exception.UnauthorizedException;
 import com.example.menu_planner.exception.WrongData;
 import com.example.menu_planner.model.dtoInput.CategoryRequest;
 import com.example.menu_planner.model.dtoInput.TagRequest;
@@ -10,6 +11,7 @@ import com.example.menu_planner.model.entity.Tag;
 import com.example.menu_planner.model.entity.User;
 import com.example.menu_planner.model.util.JwtTokenUtils;
 import com.example.menu_planner.repository.CategoryRepository;
+import com.example.menu_planner.repository.DeletedTokensRepository;
 import com.example.menu_planner.repository.TagRepository;
 import com.example.menu_planner.repository.UserRepository;
 import com.example.menu_planner.service.CategoryService;
@@ -34,17 +36,18 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final JwtTokenUtils tokenUtils;
     private final UserRepository userRepository;
+    private final DeletedTokensRepository deletedTokensRepository;
 
     @SneakyThrows
-    public Category createCategory(@Valid CategoryRequest category, Authentication authentication) {
+    public Category createCategory(@Valid CategoryRequest category, Authentication authentication, String token) {
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
-        System.out.println(!Objects.equals(user.getRole(), "ADMIN"));
-
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         if (!Objects.equals(user.getRole(), "ADMIN")) {
             throw new ForbiddenException("you don't have sufficient rights");
         }
-        System.out.println("987654321");
         if (categoryRepository.findByName(category.name()).isPresent()){
             throw new WrongData("This category exists in DB");
         }
@@ -54,13 +57,19 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @SneakyThrows
-    public Category getCategoryById(@Valid UUID category_id,Authentication authentication){
+    public Category getCategoryById(@Valid UUID category_id,Authentication authentication,String token){
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         Category category = categoryRepository.findById(category_id).orElseThrow(() -> new NotFoundException("Category not found"));
         return category;
     }
 
     @SneakyThrows
-    public List<Category> getCategoryAll(Authentication authentication){
+    public List<Category> getCategoryAll(Authentication authentication, String token){
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         List<Category> categoryList = categoryRepository.findAll();
         return categoryList;
     }

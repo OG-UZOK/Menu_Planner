@@ -15,15 +15,15 @@ import java.util.List;
 import java.util.UUID;
 
 public interface DishService {
-    public Dish createDish(@Valid DishCreateRequest dish, Authentication authentication);
+    public Dish createDish(@Valid DishCreateRequest dish, Authentication authentication, String token);
 
-    public Dish redactDish(@Valid DishCreateRequest request, Authentication authentication, UUID id);
+    public Dish redactDish(@Valid DishCreateRequest request, Authentication authentication, UUID id, String token);
 
-    public String deleteDish(Authentication authentication,@Valid UUID dish_id);
+    public String deleteDish(Authentication authentication,@Valid UUID dish_id, String token);
 
-    public DishResponse getDishById(@Valid UUID id, Authentication authentication);
+    public DishResponse getDishById(@Valid UUID id, Authentication authentication, String token);
 
-    public List<Dish> findDishesByIngredients(List<UUID> ingredientIds, Authentication authentication);
+    public List<Dish> findDishesByIngredients(List<UUID> ingredientIds, Authentication authentication, String token);
 
     public List<Dish> getDishAll(Authentication authentication, String name, Boolean myDishes,
                                  List<UUID> tags, List<UUID> categories,
@@ -33,5 +33,5 @@ public interface DishService {
                                  Double minCarbohydrates, Double maxCarbohydrates,
                                  String sortField, String sortOrder, Double cookingTime,
                                  List<UUID> includeIngredientIds, List<UUID> excludeIngredientIds,
-                                 List<UUID> types);
+                                 List<UUID> types, String token);
 }

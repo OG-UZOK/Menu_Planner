@@ -1,10 +1,12 @@
 package com.example.menu_planner.service.impl;
 
 import com.example.menu_planner.exception.NotFoundException;
+import com.example.menu_planner.exception.UnauthorizedException;
 import com.example.menu_planner.model.dtoInput.PhysiologicalRequest;
 import com.example.menu_planner.model.entity.Physiological;
 import com.example.menu_planner.model.entity.User;
 import com.example.menu_planner.model.util.JwtTokenUtils;
+import com.example.menu_planner.repository.DeletedTokensRepository;
 import com.example.menu_planner.repository.PhysiologicalRepository;
 import com.example.menu_planner.repository.UserRepository;
 import com.example.menu_planner.service.PhysiologicalService;
@@ -30,10 +32,15 @@ public class PhysiologicalServiceImpl implements PhysiologicalService {
     private final PhysiologicalRepository physiologicalRepository;
     private final UserRepository userRepository;
     private final JwtTokenUtils tokenUtils;
+    private final DeletedTokensRepository deletedTokensRepository;
+
 
     @SneakyThrows
-    public Physiological createPhysiological(@Valid PhysiologicalRequest request, Authentication authentication) {
+    public Physiological createPhysiological(@Valid PhysiologicalRequest request, Authentication authentication, String token) {
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
 
         double weight = request.weight().doubleValue();
         double height = request.height().doubleValue();
@@ -115,8 +122,11 @@ public class PhysiologicalServiceImpl implements PhysiologicalService {
     }
 
     @SneakyThrows
-    public Physiological getPhysiological(Authentication authentication){
+    public Physiological getPhysiological(Authentication authentication, String token){
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         Physiological physiological = physiologicalRepository.findByUserId(userId).orElseThrow(() ->
                 new NotFoundException("physiological with this ID does not exist"));
 

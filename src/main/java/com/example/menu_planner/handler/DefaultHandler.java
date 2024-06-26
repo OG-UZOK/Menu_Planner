@@ -1,9 +1,6 @@
 package com.example.menu_planner.handler;
 
-import com.example.menu_planner.exception.ForbiddenException;
-import com.example.menu_planner.exception.NotFoundException;
-import com.example.menu_planner.exception.UserAlreadyExistException;
-import com.example.menu_planner.exception.WrongData;
+import com.example.menu_planner.exception.*;
 import com.example.menu_planner.model.dtoOutput.ExceptionResponse;
 import com.example.menu_planner.model.validation.ValidationErrorResponse;
 import com.example.menu_planner.model.validation.Violation;
@@ -77,6 +74,13 @@ public class DefaultHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(value = NotFoundException.class)
     public ExceptionResponse handleNotFoundException(NotFoundException ex) {
+        return new ExceptionResponse(ex.getMessage());
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(value = UnauthorizedException.class)
+    public ExceptionResponse handleUnauthorizedException(UnauthorizedException ex) {
         return new ExceptionResponse(ex.getMessage());
     }
 

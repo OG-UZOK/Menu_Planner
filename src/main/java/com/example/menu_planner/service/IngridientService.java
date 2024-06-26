@@ -12,14 +12,14 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IngridientService {
-    public Ingridient createIngridient(@Valid IngridientRequest ingridient, Authentication authentication);
+    public Ingridient createIngridient(@Valid IngridientRequest ingridient, Authentication authentication, String token);
 
     public Ingridient redactIngridient(@Valid IngridientRequest request, Authentication authentication,
-                                       @Valid UUID ingridient_id);
+                                       @Valid UUID ingridient_id, String token);
 
-    public String deleteIngridient(@Valid UUID ingridient_id, Authentication authentication);
+    public String deleteIngridient(@Valid UUID ingridient_id, Authentication authentication, String token);
 
-    public List<Ingridient> getingridients(Authentication authentication);
+    public List<Ingridient> getingridients(Authentication authentication, String token);
 
 }
 

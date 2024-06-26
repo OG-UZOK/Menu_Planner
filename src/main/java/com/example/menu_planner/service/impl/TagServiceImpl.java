@@ -2,12 +2,14 @@ package com.example.menu_planner.service.impl;
 
 import com.example.menu_planner.exception.ForbiddenException;
 import com.example.menu_planner.exception.NotFoundException;
+import com.example.menu_planner.exception.UnauthorizedException;
 import com.example.menu_planner.exception.WrongData;
 import com.example.menu_planner.model.dtoInput.TagRequest;
 import com.example.menu_planner.model.entity.Category;
 import com.example.menu_planner.model.entity.Ingridient;
 import com.example.menu_planner.model.entity.Tag;
 import com.example.menu_planner.model.util.JwtTokenUtils;
+import com.example.menu_planner.repository.DeletedTokensRepository;
 import com.example.menu_planner.repository.TagRepository;
 import com.example.menu_planner.service.TagService;
 import jakarta.validation.Valid;
@@ -27,8 +29,13 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TagServiceImpl implements TagService {
     private final TagRepository tagRepository;
+    private final DeletedTokensRepository deletedTokensRepository;
 
-    public Tag createTag(@Valid TagRequest tag, Authentication authentication) {
+@SneakyThrows
+    public Tag createTag(@Valid TagRequest tag, Authentication authentication,String token) {
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         if (tagRepository.findByName(tag.name()).isPresent()){
             throw new WrongData("This tag exists in DB");
         }
@@ -37,13 +44,19 @@ public class TagServiceImpl implements TagService {
     }
 
     @SneakyThrows
-    public Tag getTagById(@Valid UUID tag_id, Authentication authentication){
+    public Tag getTagById(@Valid UUID tag_id, Authentication authentication, String token){
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         Tag tag = tagRepository.findById(tag_id).orElseThrow(() -> new NotFoundException("Tag not found"));
         return tag;
     }
 
     @SneakyThrows
-    public List<Tag> getTagAll(Authentication authentication){
+    public List<Tag> getTagAll(Authentication authentication, String token){
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         List<Tag> tagList = tagRepository.findAll();
         return tagList;
     }

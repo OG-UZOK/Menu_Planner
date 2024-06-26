@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,19 +26,31 @@ public class CategoryController {
 
     @PostMapping("create")
     @ResponseBody
-    public Category createCategory(@RequestBody CategoryRequest request, Authentication authentication){
-        return categoryService.createCategory(request, authentication);
+    public Category createCategory(@RequestBody CategoryRequest request, Authentication authentication, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token =  authorizationHeader.substring(7);
+            return categoryService.createCategory(request, authentication, token);
+        }
+        throw new IllegalArgumentException("Invalid Authorization header");
     }
 
     @GetMapping()
     public Category getCategoryById(@Valid @NotNull(message="Id cant be empty") @RequestParam("id") UUID category_id,
-                                   Authentication authentication){
-        return categoryService.getCategoryById(category_id, authentication);
+                                   Authentication authentication, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token =  authorizationHeader.substring(7);
+            return categoryService.getCategoryById(category_id, authentication, token);
+        }
+        throw new IllegalArgumentException("Invalid Authorization header");
     }
 
     @GetMapping("/all")
-    public List<Category> getCategoryAll(Authentication authentication){
-        return categoryService.getCategoryAll(authentication);
+    public List<Category> getCategoryAll(Authentication authentication, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token =  authorizationHeader.substring(7);
+            return categoryService.getCategoryAll(authentication, token);
+        }
+        throw new IllegalArgumentException("Invalid Authorization header");
     }
 
 

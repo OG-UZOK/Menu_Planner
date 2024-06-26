@@ -1,6 +1,7 @@
 package com.example.menu_planner.service.impl;
 
 import com.example.menu_planner.exception.NotFoundException;
+import com.example.menu_planner.exception.UnauthorizedException;
 import com.example.menu_planner.exception.WrongData;
 import com.example.menu_planner.model.dtoInput.DishesOnDateRequest;
 import com.example.menu_planner.model.dtoInput.DishesOnWeekRequest;
@@ -9,6 +10,7 @@ import com.example.menu_planner.model.dtoOutput.DishesOnWeekResponse;
 import com.example.menu_planner.model.entity.Dish;
 import com.example.menu_planner.model.entity.DishesOnDate;
 import com.example.menu_planner.model.util.JwtTokenUtils;
+import com.example.menu_planner.repository.DeletedTokensRepository;
 import com.example.menu_planner.repository.DishRepository;
 import com.example.menu_planner.repository.DishesOnDateRepository;
 import com.example.menu_planner.service.DishesOnDateService;
@@ -34,10 +36,15 @@ public class DishesOnDateServiceImpl implements DishesOnDateService {
     private final DishesOnDateRepository dishesOnDateRepository;
     private final DishRepository dishRepository;
     private final JwtTokenUtils tokenUtils;
+    private final DeletedTokensRepository deletedTokensRepository;
+
 
     @SneakyThrows
-    public CaloriesOnWeekResponse createPlanOnWeek(@Valid DishesOnWeekRequest request, Authentication authentication){
+    public CaloriesOnWeekResponse createPlanOnWeek(@Valid DishesOnWeekRequest request, Authentication authentication, String token){
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
 
         Integer totalCalories = 0;
         Integer totalProteins = 0;
@@ -142,8 +149,11 @@ public class DishesOnDateServiceImpl implements DishesOnDateService {
     }
 
     @SneakyThrows
-    public CaloriesOnWeekResponse redactPlanOnWeek(@Valid DishesOnWeekRequest request, Authentication authentication){
+    public CaloriesOnWeekResponse redactPlanOnWeek(@Valid DishesOnWeekRequest request, Authentication authentication, String token){
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
 
         Integer totalCalories = 0;
         Integer totalProteins = 0;
@@ -257,8 +267,11 @@ public class DishesOnDateServiceImpl implements DishesOnDateService {
     }
 
     @SneakyThrows
-    public DishesOnWeekResponse getDishesOnWeek(@Valid LocalDate startDate, @Valid LocalDate endDate, Authentication authentication) {
+    public DishesOnWeekResponse getDishesOnWeek(@Valid LocalDate startDate, @Valid LocalDate endDate, Authentication authentication, String token) {
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
 
         System.out.println(startDate.isAfter(endDate));
         System.out.println(ChronoUnit.DAYS.between(startDate, endDate));

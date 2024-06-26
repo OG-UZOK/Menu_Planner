@@ -1,6 +1,7 @@
 package com.example.menu_planner.service.impl;
 
 import com.example.menu_planner.exception.NotFoundException;
+import com.example.menu_planner.exception.UnauthorizedException;
 import com.example.menu_planner.exception.WrongData;
 import com.example.menu_planner.model.entity.Dish;
 import com.example.menu_planner.model.entity.SavedDishes;
@@ -27,9 +28,14 @@ public class SavedDishesServiceImpl implements SavedDishesService {
     private final DishRepository dishRepository;
     private final JwtTokenUtils tokenUtils;
     private final SavedDishesRepository savedDishesRepository;
+    private final DeletedTokensRepository deletedTokensRepository;
+
 
     @SneakyThrows
-    public String saveDishInList(@Valid UUID dish_id, Authentication authentication){
+    public String saveDishInList(@Valid UUID dish_id, Authentication authentication, String token){
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
         Dish dish = dishRepository.findById(dish_id).orElseThrow(() -> new NotFoundException("Dish with the id not found"));
          if(savedDishesRepository.findAllByDishIdAndUserId(dish_id, userId).isPresent()){
@@ -41,7 +47,10 @@ public class SavedDishesServiceImpl implements SavedDishesService {
     }
 
     @SneakyThrows
-    public String deleteDishInList(@Valid UUID dish_id, Authentication authentication){
+    public String deleteDishInList(@Valid UUID dish_id, Authentication authentication, String token){
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
         Dish dish = dishRepository.findById(dish_id).orElseThrow(() -> new NotFoundException("Dish with the id not found"));
         SavedDishes savedDishes = SavedDishes.of(null, userId, dish_id);
@@ -50,7 +59,10 @@ public class SavedDishesServiceImpl implements SavedDishesService {
     }
 
     @SneakyThrows
-    public List<Dish> getDishesInList(Authentication authentication){
+    public List<Dish> getDishesInList(Authentication authentication, String token){
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
         List<Dish> savedList = null;
         savedList = savedDishesRepository.findDishesByUserId(userId);

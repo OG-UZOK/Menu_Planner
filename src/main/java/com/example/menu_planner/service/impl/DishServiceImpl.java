@@ -2,6 +2,7 @@ package com.example.menu_planner.service.impl;
 
 import com.example.menu_planner.exception.ForbiddenException;
 import com.example.menu_planner.exception.NotFoundException;
+import com.example.menu_planner.exception.UnauthorizedException;
 import com.example.menu_planner.model.dtoInput.DishCreateRequest;
 import com.example.menu_planner.model.dtoInput.IngridientInDishRequest;
 import com.example.menu_planner.model.dtoInput.StepRequest;
@@ -68,9 +69,14 @@ public class DishServiceImpl implements DishService {
     private final IngridientRepository ingridientRepository;
     private final TypeOfMealRepository typeOfMealRepository;
     private final SavedDishesRepository savedDishesRepository;
+    private final DeletedTokensRepository deletedTokensRepository;
+
     @SneakyThrows
-    public Dish createDish(@Valid DishCreateRequest dish, Authentication authentication) {
+    public Dish createDish(@Valid DishCreateRequest dish, Authentication authentication, String token) {
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
 
         Integer totalProteinDish = 0;
         Integer totalFatDish = 0;
@@ -163,10 +169,13 @@ public class DishServiceImpl implements DishService {
     }
 
     @SneakyThrows
-    public Dish redactDish(@Valid DishCreateRequest request, Authentication authentication, UUID id) {
+    public Dish redactDish(@Valid DishCreateRequest request, Authentication authentication, UUID id, String token) {
         // Get user ID from authentication token
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
 
         // Retrieve and validate the existing dish
         Dish oldDish = dishRepository.findById(id).orElseThrow(() -> new NotFoundException("Dish with the id not found"));
@@ -282,9 +291,12 @@ public class DishServiceImpl implements DishService {
         return dishRepository.save(oldDish);
     }
     @SneakyThrows
-    public String deleteDish(Authentication authentication, @Valid UUID dish_id) {
+    public String deleteDish(Authentication authentication, @Valid UUID dish_id, String token) {
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
 
         Dish dish = dishRepository.findById(dish_id).orElseThrow(() -> new NotFoundException("Dish with the id not found"));
 
@@ -310,9 +322,12 @@ public class DishServiceImpl implements DishService {
     }
 
     @SneakyThrows
-    public DishResponse getDishById(@Valid UUID dish_id, Authentication authentication){
+    public DishResponse getDishById(@Valid UUID dish_id, Authentication authentication, String token){
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         Dish dish = dishRepository.findById(dish_id).orElseThrow(() -> new NotFoundException("Dish with the id not found"));
 
         List<Step> listSteps = stepRepository.findByDishId(dish.getId());
@@ -336,7 +351,10 @@ public class DishServiceImpl implements DishService {
                                  Double minCarbohydrates, Double maxCarbohydrates,
                                  String sortField, String sortOrder, Double cookingTime,
                                  List<UUID> includeIngredientIds, List<UUID> excludeIngredientIds,
-                                 List<UUID> types){
+                                 List<UUID> types, String token){
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         UUID userId = null;
         if (myDishes != null && myDishes) {
             userId = tokenUtils.getUserIdFromAuthentication(authentication);
@@ -367,9 +385,12 @@ public class DishServiceImpl implements DishService {
 
     }
 
-    @Override
-    public List<Dish> findDishesByIngredients(List<UUID> ingredientIds, Authentication authentication) {
+    @SneakyThrows
+    public List<Dish> findDishesByIngredients(List<UUID> ingredientIds, Authentication authentication, String token) {
         // Получение всех блюд
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         List<Dish> allDishes = dishRepository.findAll();
 
         // Подсчет соответствия ингредиентов для каждого блюда

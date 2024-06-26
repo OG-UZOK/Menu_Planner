@@ -1,6 +1,7 @@
 package com.example.menu_planner.service.impl;
 
 import com.example.menu_planner.exception.NotFoundException;
+import com.example.menu_planner.exception.UnauthorizedException;
 import com.example.menu_planner.exception.UserAlreadyExistException;
 import com.example.menu_planner.exception.WrongData;
 import com.example.menu_planner.model.dtoInput.Password;
@@ -8,8 +9,11 @@ import com.example.menu_planner.model.dtoInput.UserLogin;
 import com.example.menu_planner.model.dtoInput.UserRegistration;
 import com.example.menu_planner.model.dtoOutput.JwtResponse;
 import com.example.menu_planner.model.dtoOutput.UserProfileResponse;
+import com.example.menu_planner.model.entity.DeletedTokens;
 import com.example.menu_planner.model.entity.User;
+import com.example.menu_planner.model.util.JwtAuthenticationDetails;
 import com.example.menu_planner.model.util.JwtTokenUtils;
+import com.example.menu_planner.repository.DeletedTokensRepository;
 import com.example.menu_planner.repository.UserRepository;
 import com.example.menu_planner.service.UserService;
 import jakarta.validation.Valid;
@@ -23,6 +27,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -35,6 +40,9 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final UserRepository userRepository;
     private final JwtTokenUtils tokenUtils;
     private final PasswordEncoder passwordEncoder;
+    private final DeletedTokensRepository deletedTokensRepository;
+
+
 
     @SneakyThrows
     public JwtResponse registrationUser(@Valid UserRegistration userRegistration){
@@ -67,16 +75,24 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @SneakyThrows
-    public UserProfileResponse getProfile(Authentication authentication) {
+    public UserProfileResponse getProfile(Authentication authentication, String token) {
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         return new UserProfileResponse(user.getEmail(), user.getName(), user.getSurname());
     }
 
     @SneakyThrows
-    public UserProfileResponse redactProfile(@Valid UserProfileResponse userProfileResponse, Authentication authentication) {
+    public UserProfileResponse redactProfile(@Valid UserProfileResponse userProfileResponse, Authentication authentication, String token) {
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
 
         Optional<User> existingUser = userRepository.findByEmail(userProfileResponse.email());
         if (existingUser.isPresent() && !existingUser.get().getId().equals(user.getId())) {
@@ -91,11 +107,30 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @SneakyThrows
-    public Password changePassword(@Valid Password password, Authentication authentication) {
+    public Password changePassword(@Valid Password password, Authentication authentication, String token) {
         UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         user.setPassword(passwordEncoder.encode(password.password()));
         return password;
     }
+
+    @SneakyThrows
+    public String logout(Authentication authentication , String token) {
+        UUID userId = tokenUtils.getUserIdFromAuthentication(authentication);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
+        DeletedTokens deletedToken = DeletedTokens.of(token);
+        deletedTokensRepository.save(deletedToken);
+        return "success";
+
+    }
+
+
 }
+

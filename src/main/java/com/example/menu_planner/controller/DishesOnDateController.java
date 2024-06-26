@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,26 +28,34 @@ public class DishesOnDateController {
 
     @PostMapping("create")
     @ResponseBody
-    public CaloriesOnWeekResponse createPlanOnWeek(@RequestBody DishesOnWeekRequest request, Authentication authentication){
-        return dishesOnDateService.createPlanOnWeek(request, authentication);
+    public CaloriesOnWeekResponse createPlanOnWeek(@RequestBody DishesOnWeekRequest request, Authentication authentication, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token =  authorizationHeader.substring(7);
+            return dishesOnDateService.createPlanOnWeek(request, authentication, token);
+        }
+        throw new IllegalArgumentException("Invalid Authorization header");
     }
 
     @PutMapping("redact")
     @ResponseBody
-    public CaloriesOnWeekResponse redactPlanOnWeek(@RequestBody DishesOnWeekRequest request, Authentication authentication){
-        return dishesOnDateService.redactPlanOnWeek(request, authentication);
+    public CaloriesOnWeekResponse redactPlanOnWeek(@RequestBody DishesOnWeekRequest request, Authentication authentication, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token =  authorizationHeader.substring(7);
+            return dishesOnDateService.redactPlanOnWeek(request, authentication, token);
+        }
+        throw new IllegalArgumentException("Invalid Authorization header");
     }
 
     @GetMapping()
     public DishesOnWeekResponse getDishesOnWeek(
             @RequestParam("startDate") @NotNull(message = "startDate cannot be empty") LocalDate startDate,
             @RequestParam("endDate") @NotNull(message = "endDate cannot be empty") LocalDate endDate,
-            Authentication authentication) {
-        return dishesOnDateService.getDishesOnWeek(startDate, endDate, authentication);
+            Authentication authentication, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token =  authorizationHeader.substring(7);
+            return dishesOnDateService.getDishesOnWeek(startDate, endDate, authentication, token);
+        }
+        throw new IllegalArgumentException("Invalid Authorization header");
     }
 
-//    @GetMapping("/generate")
-//    public CaloriesOnWeekResponse redactPlanOnWeek(@RequestParam("myDishes"), Authentication authentication){
-//        return dishesOnDateService.redactPlanOnWeek(request, authentication);
-//    }
 }

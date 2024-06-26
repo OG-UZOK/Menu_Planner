@@ -10,6 +10,7 @@ import com.example.menu_planner.service.impl.UserServiceImpl;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,20 +34,43 @@ public class UserController {
     }
 
     @GetMapping("profile")
-    public UserProfileResponse getProfile(Authentication authentication){
-        return userService.getProfile(authentication);
+    public UserProfileResponse getProfile(Authentication authentication,@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token =  authorizationHeader.substring(7);
+            return userService.getProfile(authentication, token);
+        }
+        throw new IllegalArgumentException("Invalid Authorization header");
+
     }
 
     @PutMapping("profile")
     @ResponseBody
-    public UserProfileResponse redactProfile(@RequestBody UserProfileResponse userProfileResponse, Authentication authentication){
-        return userService.redactProfile(userProfileResponse, authentication);
+    public UserProfileResponse redactProfile(@RequestBody UserProfileResponse userProfileResponse, Authentication authentication, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token =  authorizationHeader.substring(7);
+            return userService.redactProfile(userProfileResponse, authentication, token);
+        }
+        throw new IllegalArgumentException("Invalid Authorization header");
     }
 
-    @PostMapping("password")
+    @PostMapping("change/password")
     @ResponseBody
-    public Password changePassword(@RequestBody Password password, Authentication authentication){
-        return userService.changePassword(password, authentication);
+    public Password changePassword(@RequestBody Password password, Authentication authentication, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token =  authorizationHeader.substring(7);
+            return userService.changePassword(password, authentication, token);
+        }
+        throw new IllegalArgumentException("Invalid Authorization header");
+    }
+
+    @GetMapping("logout")
+    public String logout(Authentication authentication, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token =  authorizationHeader.substring(7);
+            return userService.logout(authentication, token);
+        }
+        throw new IllegalArgumentException("Invalid Authorization header");
+
     }
 
 }

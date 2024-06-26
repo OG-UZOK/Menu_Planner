@@ -1,6 +1,8 @@
 package com.example.menu_planner.service.impl;
 
 import com.example.menu_planner.exception.NotFoundException;
+import com.example.menu_planner.exception.UnauthorizedException;
+import com.example.menu_planner.repository.DeletedTokensRepository;
 import com.example.menu_planner.repository.StepRepository;
 import com.example.menu_planner.service.ImageService;
 import jakarta.annotation.PostConstruct;
@@ -29,6 +31,8 @@ public class ImageServiceImpl implements ImageService {
 
     @Value("${external.folder.relative.path}")
     private String externalFolderRelativePath;
+    private final DeletedTokensRepository deletedTokensRepository;
+
 
     private Path externalFolderPath;
 
@@ -51,7 +55,10 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @SneakyThrows
-    public String upload(@Valid MultipartFile image, Authentication authentication) {
+    public String upload(@Valid MultipartFile image, Authentication authentication, String token) {
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         UUID idImage = UUID.randomUUID();
         String fileName = idImage.toString() + ".png";
         Path path = externalFolderPath.resolve(fileName);
@@ -63,7 +70,10 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @SneakyThrows
-    public Resource download(@Valid String imageName, Authentication authentication){
+    public Resource download(@Valid String imageName, Authentication authentication, String token){
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
         try {
             String name = imageName + ".png";
             Path filePath = externalFolderPath.resolve(name);

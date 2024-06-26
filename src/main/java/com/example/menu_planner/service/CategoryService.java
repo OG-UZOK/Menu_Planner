@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface CategoryService {
-    public Category createCategory(@Valid CategoryRequest category, Authentication authentication);
+    public Category createCategory(@Valid CategoryRequest category, Authentication authentication, String token);
 
-    public Category getCategoryById(@Valid UUID category_id,Authentication authentication);
+    public Category getCategoryById(@Valid UUID category_id,Authentication authentication, String token);
 
-    public List<Category> getCategoryAll(Authentication authentication);
+    public List<Category> getCategoryAll(Authentication authentication, String token);
 }

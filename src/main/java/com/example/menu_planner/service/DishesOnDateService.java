@@ -10,9 +10,9 @@ import java.time.LocalDate;
 
 public interface DishesOnDateService {
 
-    public CaloriesOnWeekResponse createPlanOnWeek(@Valid DishesOnWeekRequest request, Authentication authentication);
+    public CaloriesOnWeekResponse createPlanOnWeek(@Valid DishesOnWeekRequest request, Authentication authentication, String token);
 
-    public CaloriesOnWeekResponse redactPlanOnWeek(@Valid DishesOnWeekRequest request, Authentication authentication);
+    public CaloriesOnWeekResponse redactPlanOnWeek(@Valid DishesOnWeekRequest request, Authentication authentication, String token);
 
-    public DishesOnWeekResponse getDishesOnWeek(@Valid LocalDate startDate, @Valid LocalDate endDate, Authentication authentication);
+    public DishesOnWeekResponse getDishesOnWeek(@Valid LocalDate startDate, @Valid LocalDate endDate, Authentication authentication, String token);
 }
