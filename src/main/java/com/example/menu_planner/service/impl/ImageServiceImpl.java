@@ -60,7 +60,7 @@ public class ImageServiceImpl implements ImageService {
             throw new UnauthorizedException();
         }
         UUID idImage = UUID.randomUUID();
-        String fileName = idImage.toString() + ".png";
+        String fileName = idImage.toString() + ".webp";
         Path path = externalFolderPath.resolve(fileName);
 
         log.info("Current working directory: " + System.getProperty("user.dir"));
@@ -75,7 +75,7 @@ public class ImageServiceImpl implements ImageService {
             throw new UnauthorizedException();
         }
         try {
-            String name = imageName + ".png";
+            String name = imageName + ".webp";
             Path filePath = externalFolderPath.resolve(name);
             Resource resource = new UrlResource(filePath.toUri());
 

@@ -21,5 +21,7 @@ public interface IngridientService {
 
     public List<Ingridient> getingridients(Authentication authentication, String token);
 
+    public Ingridient getIngridientFindByName(String name, Authentication authentication, String token);
+
 }
 

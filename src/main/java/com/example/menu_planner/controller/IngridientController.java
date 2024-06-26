@@ -7,6 +7,7 @@ import com.example.menu_planner.model.entity.Ingridient;
 import com.example.menu_planner.service.IngridientService;
 import com.example.menu_planner.service.UserService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,6 +62,15 @@ public class IngridientController {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String token =  authorizationHeader.substring(7);
             return ingridientService.getingridients(authentication, token);
+        }
+        throw new IllegalArgumentException("Invalid Authorization header");
+    }
+
+    @GetMapping("findByName")
+    public Ingridient getIngridientFindByName(@RequestParam @NotBlank(message = "name can not be empty") String name,Authentication authentication, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token =  authorizationHeader.substring(7);
+            return ingridientService.getIngridientFindByName(name, authentication, token);
         }
         throw new IllegalArgumentException("Invalid Authorization header");
     }

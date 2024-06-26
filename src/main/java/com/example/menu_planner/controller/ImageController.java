@@ -1,10 +1,12 @@
 package com.example.menu_planner.controller;
 
+import com.example.menu_planner.exception.UnauthorizedException;
 import com.example.menu_planner.service.ImageService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -21,12 +23,13 @@ public class ImageController {
     private final ImageService service;
     @PostMapping("/upload")
     @ResponseBody
-    public String upload(@Valid @NotNull @RequestParam("image") MultipartFile image, Authentication authentication, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+    @SneakyThrows
+    public String upload(@Valid @NotNull @RequestParam("image") MultipartFile image, Authentication authentication,  @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String token =  authorizationHeader.substring(7);
             return service.upload(image, authentication, token);
         }
-        throw new IllegalArgumentException("Invalid Authorization header");
+        throw new UnauthorizedException("Invalid Authorization header");
     }
 
     @GetMapping("/download/{name}")

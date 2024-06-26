@@ -164,4 +164,14 @@ public class IngridientServiceImpl implements IngridientService {
 
         return listIngridients;
     }
+
+    @SneakyThrows
+    public Ingridient getIngridientFindByName(String name, Authentication authentication, String token){
+        if (deletedTokensRepository.findById(token).isPresent()){
+            throw new UnauthorizedException();
+        }
+        Ingridient ingridient = ingridientRepository.findByName(name).orElseThrow(() -> new org.webjars.NotFoundException("Ingridient with this name not found"));
+        return ingridient;
+    }
+
 }
