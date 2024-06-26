@@ -115,9 +115,9 @@ public class DishServiceImpl implements DishService {
         if (dish.ingredient() != null) {
             for (IngridientInDishRequest ingridientRequest : dish.ingredient()) {
                 Ingridient currentIngridient = ingridientRepository.findById(ingridientRequest.ingridient_id()).orElseThrow(() -> new NotFoundException("Ingridient not found"));
-                totalProteinDish += (int) (currentIngridient.getProtein() * (ingridientRequest.amount() / 100));
-                totalFatDish += (int) (currentIngridient.getFat() * (ingridientRequest.amount() / 100));
-                totalCarbohydrateDish += (int) (currentIngridient.getCarbohydrates() * (ingridientRequest.amount() / 100));
+                totalProteinDish += (int) (currentIngridient.getProtein() * (ingridientRequest.gramm() / 100));
+                totalFatDish += (int) (currentIngridient.getFat() * (ingridientRequest.gramm() / 100));
+                totalCarbohydrateDish += (int) (currentIngridient.getCarbohydrates() * (ingridientRequest.gramm() / 100));
 
                 IngridientInDish ingridientInDish = IngridientInDish.of(null, idDish, currentIngridient, ingridientRequest.amount(), ingridientRequest.unit(), ingridientRequest.gramm());
                 ingridientInDishList.add(ingridientInDish);
