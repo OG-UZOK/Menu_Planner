@@ -20,6 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
@@ -357,7 +359,7 @@ public class DishServiceImpl implements DishService {
     }
 
     @SneakyThrows
-    public List<Dish> getDishAll(Authentication authentication, String name, Boolean myDishes,
+    public Page<Dish> getDishAll(Authentication authentication, String name, Boolean myDishes,
                                  List<UUID> tags, List<UUID> categories,
                                  Double minProteins, Double maxProteins,
                                  Double minFats, Double maxFats,
@@ -365,7 +367,7 @@ public class DishServiceImpl implements DishService {
                                  Double minCarbohydrates, Double maxCarbohydrates,
                                  String sortField, String sortOrder, Double cookingTime,
                                  List<UUID> includeIngredientIds, List<UUID> excludeIngredientIds,
-                                 List<UUID> types, String token){
+                                 List<UUID> types, String token, Pageable pageable){
         if (deletedTokensRepository.findById(token).isPresent()){
             throw new UnauthorizedException();
         }
@@ -390,12 +392,7 @@ public class DishServiceImpl implements DishService {
                 .and(DishSpecification.maxCookingTime(cookingTime))
                 .and(DishSpecification.hasTypes(types));
 
-        Sort sort = Sort.by(Sort.Direction.ASC, sortField != null ? sortField : "name");
-        if ("desc".equalsIgnoreCase(sortOrder)) {
-            sort = sort.descending();
-        }
-
-        return dishRepository.findAll(spec, sort);
+        return dishRepository.findAll(spec, pageable);
 
     }
 

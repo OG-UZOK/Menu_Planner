@@ -4,6 +4,8 @@ import com.example.menu_planner.model.dtoInput.IngridientRequest;
 import com.example.menu_planner.model.entity.Ingridient;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,7 +21,7 @@ public interface IngridientService {
 
     public String deleteIngridient(@Valid UUID ingridient_id, Authentication authentication, String token);
 
-    public List<Ingridient> getingridients(Authentication authentication, String token);
+    public Page<Ingridient> getingridients(Authentication authentication, String token, Pageable pageable);
 
     public Ingridient getIngridientFindByName(String name, Authentication authentication, String token);
 

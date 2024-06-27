@@ -1,5 +1,6 @@
 package com.example.menu_planner.controller;
 
+import com.example.menu_planner.exception.WrongData;
 import com.example.menu_planner.model.dtoInput.IngridientRequest;
 import com.example.menu_planner.model.dtoInput.UserRegistration;
 import com.example.menu_planner.model.dtoOutput.JwtResponse;
@@ -11,6 +12,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -58,10 +62,16 @@ public class IngridientController {
     }
 
     @GetMapping("all")
-    public List<Ingridient> getIngridients(Authentication authentication, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+    public Page<Ingridient> getIngridients(Authentication authentication, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader,
+                                           @RequestParam(value = "page", defaultValue = "1") int page,
+                                           @RequestParam(value = "size", defaultValue = "10") int size){
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String token =  authorizationHeader.substring(7);
-            return ingridientService.getingridients(authentication, token);
+            Pageable pageable = PageRequest.of(page, size);
+            if (page <= 0 || size <= 0){
+                throw new WrongData("Page or Size invalid value");
+            }
+            return ingridientService.getingridients(authentication, token, pageable);
         }
         throw new IllegalArgumentException("Invalid Authorization header");
     }

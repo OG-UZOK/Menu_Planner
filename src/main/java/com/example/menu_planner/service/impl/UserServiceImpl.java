@@ -115,6 +115,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             throw new UnauthorizedException();
         }
         user.setPassword(passwordEncoder.encode(password.password()));
+        userRepository.save(user);
         return password;
     }
 

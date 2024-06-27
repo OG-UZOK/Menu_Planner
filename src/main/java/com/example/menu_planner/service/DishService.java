@@ -9,6 +9,8 @@ import com.example.menu_planner.model.dtoOutput.JwtResponse;
 import com.example.menu_planner.model.dtoOutput.UserProfileResponse;
 import com.example.menu_planner.model.entity.Dish;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 
 import java.util.List;
@@ -25,7 +27,7 @@ public interface DishService {
 
     public List<Dish> findDishesByIngredients(List<UUID> ingredientIds, Authentication authentication, String token);
 
-    public List<Dish> getDishAll(Authentication authentication, String name, Boolean myDishes,
+    public Page<Dish> getDishAll(Authentication authentication, String name, Boolean myDishes,
                                  List<UUID> tags, List<UUID> categories,
                                  Double minProteins, Double maxProteins,
                                  Double minFats, Double maxFats,
@@ -33,5 +35,5 @@ public interface DishService {
                                  Double minCarbohydrates, Double maxCarbohydrates,
                                  String sortField, String sortOrder, Double cookingTime,
                                  List<UUID> includeIngredientIds, List<UUID> excludeIngredientIds,
-                                 List<UUID> types, String token);
+                                 List<UUID> types, String token, Pageable pageable);
 }

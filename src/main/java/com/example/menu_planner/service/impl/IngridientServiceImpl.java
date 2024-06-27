@@ -21,6 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -156,11 +158,11 @@ public class IngridientServiceImpl implements IngridientService {
     }
 
     @SneakyThrows
-    public List<Ingridient> getingridients(Authentication authentication, String token){
+    public Page<Ingridient> getingridients(Authentication authentication, String token, Pageable pageable){
         if (deletedTokensRepository.findById(token).isPresent()){
             throw new UnauthorizedException();
         }
-        List<Ingridient> listIngridients = ingridientRepository.findAll();
+        Page<Ingridient> listIngridients = ingridientRepository.findAll(pageable);
 
         return listIngridients;
     }

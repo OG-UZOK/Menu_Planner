@@ -1,5 +1,6 @@
 package com.example.menu_planner.controller;
 
+import com.example.menu_planner.exception.WrongData;
 import com.example.menu_planner.model.dtoInput.DishCreateRequest;
 import com.example.menu_planner.model.dtoInput.UserRegistration;
 import com.example.menu_planner.model.dtoOutput.DishResponse;
@@ -14,6 +15,10 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -102,33 +107,39 @@ public class DishController {
     }
 
     @GetMapping("all")
-    public List<Dish> getDishAll(Authentication authentication,
-                                  @RequestParam(value = "name", required = false) String name,
-                                  @RequestParam(value = "myDishes", required = false) Boolean myDishes,
-                                  @RequestParam(value = "tags", required = false) List<UUID> tags,
-                                  @RequestParam(value = "categories", required = false) List<UUID> categories,
-                                  @RequestParam(value = "minProteins", required = false) Double minProteins,
-                                  @RequestParam(value = "maxProteins", required = false) Double maxProteins,
-                                  @RequestParam(value = "minFats", required = false) Double minFats,
-                                  @RequestParam(value = "maxFats", required = false) Double maxFats,
-                                  @RequestParam(value = "minCalories", required = false) Double minCalories,
-                                  @RequestParam(value = "maxCalories", required = false) Double maxCalories,
-                                  @RequestParam(value = "minCarbohydrates", required = false) Double minCarbohydrates,
-                                  @RequestParam(value = "maxCarbohydrates", required = false) Double maxCarbohydrates,
-                                  @RequestParam(value = "sortField", required = false) String sortField,
-                                  @RequestParam(value = "sortOrder", required = false) String sortOrder,
-                                  @RequestParam(value = "cookingTime", required = false) Double cookingTime,
-                                  @RequestParam(value = "includeIngredients", required = false) List<UUID> includeIngredientIds,
-                                  @RequestParam(value = "excludeIngredients", required = false) List<UUID> excludeIngredientIds,
-                                  @RequestParam(value = "types", required = false) List<UUID> types,
+    public Page<Dish> getDishAll(Authentication authentication,
+                                 @RequestParam(value = "name", required = false) String name,
+                                 @RequestParam(value = "myDishes", required = false) Boolean myDishes,
+                                 @RequestParam(value = "tags", required = false) List<UUID> tags,
+                                 @RequestParam(value = "categories", required = false) List<UUID> categories,
+                                 @RequestParam(value = "minProteins", required = false) Double minProteins,
+                                 @RequestParam(value = "maxProteins", required = false) Double maxProteins,
+                                 @RequestParam(value = "minFats", required = false) Double minFats,
+                                 @RequestParam(value = "maxFats", required = false) Double maxFats,
+                                 @RequestParam(value = "minCalories", required = false) Double minCalories,
+                                 @RequestParam(value = "maxCalories", required = false) Double maxCalories,
+                                 @RequestParam(value = "minCarbohydrates", required = false) Double minCarbohydrates,
+                                 @RequestParam(value = "maxCarbohydrates", required = false) Double maxCarbohydrates,
+                                 @RequestParam(value = "sortField", required = false) String sortField,
+                                 @RequestParam(value = "sortOrder", required = false) String sortOrder,
+                                 @RequestParam(value = "cookingTime", required = false) Double cookingTime,
+                                 @RequestParam(value = "includeIngredients", required = false) List<UUID> includeIngredientIds,
+                                 @RequestParam(value = "excludeIngredients", required = false) List<UUID> excludeIngredientIds,
+                                 @RequestParam(value = "types", required = false) List<UUID> types,
+                                 @RequestParam(value = "page", defaultValue = "1") int page,
+                                 @RequestParam(value = "size", defaultValue = "10") int size,
                                  @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String token =  authorizationHeader.substring(7);
+            if (size <= 0 || page <= 0){
+                throw new WrongData("Size or Page invalid value");
+            }
+            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sortField != null ? sortField : "name"));
             return dishService.getDishAll(authentication, name, myDishes, tags, categories,
                     minProteins, maxProteins, minFats, maxFats,
                     minCalories, maxCalories, minCarbohydrates, maxCarbohydrates,
-                    sortField, sortOrder, cookingTime,includeIngredientIds, excludeIngredientIds, types,token);
+                    sortField, sortOrder, cookingTime,includeIngredientIds, excludeIngredientIds, types,token, pageable);
         }
         throw new IllegalArgumentException("Invalid Authorization header");
     }

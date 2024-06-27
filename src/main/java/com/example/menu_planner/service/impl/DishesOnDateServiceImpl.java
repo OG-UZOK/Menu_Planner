@@ -51,6 +51,14 @@ public class DishesOnDateServiceImpl implements DishesOnDateService {
         Integer totalFats = 0;
         Integer totalCarbohydrates = 0;
 
+        dishesOnDateRepository.deleteAllByDateAndUser_id(request.monday().date(), userId);
+        dishesOnDateRepository.deleteAllByDateAndUser_id(request.tuesday().date(), userId);
+        dishesOnDateRepository.deleteAllByDateAndUser_id(request.wednesday().date(), userId);
+        dishesOnDateRepository.deleteAllByDateAndUser_id(request.thursday().date(), userId);
+        dishesOnDateRepository.deleteAllByDateAndUser_id(request.friday().date(), userId);
+        dishesOnDateRepository.deleteAllByDateAndUser_id(request.saturday().date(), userId);
+        dishesOnDateRepository.deleteAllByDateAndUser_id(request.sunday().date(), userId);
+
 
         if (request.monday().dishes() != null) {
             for (DishesOnDateRequest day : request.monday().dishes()) {
