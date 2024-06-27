@@ -135,7 +135,21 @@ public class DishServiceImpl implements DishService {
 
         if (dish.steps() != null) {
             for (StepRequest step : dish.steps()) {
-                Step currentStep = Step.of(null, step.number(), idDish,  step.title(), step.image(), step.description());
+                String imageDish = null;
+                try {
+                    String name = step.image() + ".png";
+                    Path filePath = externalFolderPath.resolve(name);
+                    Resource resource = new UrlResource(filePath.toUri());
+
+                    if (resource.exists() || resource.isReadable()) {
+                        imageDish = step.image();
+                    } else {
+                        throw new NotFoundException("Could not find or read file: " + step.title());
+                    }
+                } catch (NotFoundException ex){
+                    throw new RuntimeException("Could not find or read file: " + step.title());
+                }
+                Step currentStep = Step.of(null, step.number(), idDish,  step.title(), imageDish, step.description());
                 stepRepository.save(currentStep);
             }
         }
